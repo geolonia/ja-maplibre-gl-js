@@ -31,7 +31,7 @@ export type CanvasSourceSpecification = {|
  */
 
 /**
- * A data source containing the contents of an HTML canvas. See {@link CanvasSourceOptions} for detailed documentation of options.
+ * HTML Canvas コンテンツを含むデータソース。オプションについての詳細なドキュメンテーションは {@link CanvasSourceOptions} をご覧ください。
  *
  * @example
  * // add to map
