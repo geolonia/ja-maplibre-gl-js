@@ -30,14 +30,14 @@ jobs:
           workflow: ${{ github.event.workflow_run.workflow_id }}
           name: dist
           path: after
-          repo: maplibre/maplibre-gl-js
+          repo: geolonia/ja-maplibre-gl-js
       - name: Download branch build info
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: ${{ github.event.workflow_run.workflow_id }}
           name: build-info
           path: build-info
-          repo: maplibre/maplibre-gl-js
+          repo: geolonia/ja-maplibre-gl-js
       - name: Get build info
         id: build_info
         run: |
@@ -50,7 +50,7 @@ jobs:
           commit: ${{ steps.build_info.outputs.base_sha }}
           name: dist
           path: before
-          repo: maplibre/maplibre-gl-js
+          repo: geolonia/ja-maplibre-gl-js
       - run: npx source-map-explorer before/maplibre-gl.js --gzip --json before.json
       - run: npx source-map-explorer after/maplibre-gl.js --gzip --json after.json
       - name: Build bundle size report
