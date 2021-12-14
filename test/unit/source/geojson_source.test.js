@@ -1,10 +1,11 @@
+import '../../stub_loader';
 import {test} from '../../util/test';
-import Tile from '../../../src/source/tile';
-import {OverscaledTileID} from '../../../src/source/tile_id';
-import GeoJSONSource from '../../../src/source/geojson_source';
-import Transform from '../../../src/geo/transform';
-import LngLat from '../../../src/geo/lng_lat';
-import {extend} from '../../../src/util/util';
+import Tile from '../../../rollup/build/tsc/src/source/tile';
+import {OverscaledTileID} from '../../../rollup/build/tsc/src/source/tile_id';
+import GeoJSONSource from '../../../rollup/build/tsc/src/source/geojson_source';
+import Transform from '../../../rollup/build/tsc/src/geo/transform';
+import LngLat from '../../../rollup/build/tsc/src/geo/lng_lat';
+import {extend} from '../../../rollup/build/tsc/src/util/util';
 
 const wrapDispatcher = (dispatcher) => {
     return {
@@ -101,6 +102,37 @@ test('GeoJSONSource#setData', (t) => {
             }
         };
         source.setData('http://localhost/nonexistent');
+    });
+
+    t.test('only marks source as loaded when there are no pending loads', (t) => {
+        const source = createSource();
+        source.once('data', () => {
+            t.notOk(source.loaded());
+            source.once('data', () => {
+                t.ok(source.loaded());
+                t.end();
+            });
+        });
+        source.setData({});
+        source.setData({});
+    });
+
+    t.test('marks source as not loaded before firing "dataloading" event', (t) => {
+        const source = createSource();
+        source.once('dataloading', () => {
+            t.notOk(source.loaded());
+            t.end();
+        });
+        source.setData({});
+    });
+
+    t.test('marks source as loaded before firing "data" event', (t) => {
+        const source = createSource();
+        source.once('data', () => {
+            t.ok(source.loaded());
+            t.end();
+        });
+        source.setData({});
     });
 
     t.end();
