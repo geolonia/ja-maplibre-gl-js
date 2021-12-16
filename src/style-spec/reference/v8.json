@@ -5844,7 +5844,7 @@
       "default": 1,
       "minimum": 0,
       "maximum": 1,
-      "doc": "The opacity at which the background will be drawn.",
+      "doc": "背景の透明度を指定します。",
       "transition": true,
       "sdk-support": {
         "basic functionality": {
