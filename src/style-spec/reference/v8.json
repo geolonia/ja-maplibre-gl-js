@@ -499,7 +499,7 @@
   "layer": {
     "id": {
       "type": "string",
-      "doc": "Unique layer name.",
+      "doc": "固有のレイヤー名",
       "required": true
     },
     "type": {
