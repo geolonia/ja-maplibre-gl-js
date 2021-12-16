@@ -1,7 +1,8 @@
 name: publish-style-spec
 
 on:
-  workflow_dispatch
+  push:
+    branches: [main]
 
 jobs:
   build_publish:
@@ -30,12 +31,10 @@ jobs:
       - name: Build style spec
         run: |
           npm run build-style-spec
-          cp -r dist/style-spec/* src/style-spec/dist
       
-      - name: Check version and publish
-        run: |
-          cd src/style-spec
-          node -e "if(require('./package').version.includes('dev')) { process.exit(1) }"
-          npm publish --access=public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_ORG_TOKEN }}
+      - name: Deploy style spec
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist/style-spec
+          publish_branch: gh-pages-public
