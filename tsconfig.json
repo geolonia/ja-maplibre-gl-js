@@ -30,8 +30,7 @@
   "include": [
     "src/**/*.ts",
     "bench/**/*.ts",
-    "bench/**/*.tsx",
-    "src/style-spec/reference/latest.js"
+    "bench/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
