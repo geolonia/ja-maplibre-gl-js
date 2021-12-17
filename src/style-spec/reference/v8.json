@@ -5795,7 +5795,7 @@
     "background-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "The color with which the background will be drawn.",
+      "doc": "背景色を指定します。あああああ",
       "transition": true,
       "requires": [
         {
