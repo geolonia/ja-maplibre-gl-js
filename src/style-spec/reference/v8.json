@@ -5795,7 +5795,7 @@
     "background-color": {
       "type": "color",
       "default": "#000000",
-      "doc": "背景色を指定します。あああああ",
+      "doc": "背景色を指定します。",
       "transition": true,
       "requires": [
         {
