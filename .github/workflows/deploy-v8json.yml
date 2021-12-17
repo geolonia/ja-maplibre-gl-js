@@ -10,12 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
-      - name: Build style spec
-        run: |
-          ls
-          pwd
-      
       - name: Deploy style spec
         uses: peaceiris/actions-gh-pages@v3
         with:
