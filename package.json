@@ -161,7 +161,7 @@
     "stylelint": "^13.13.1",
     "stylelint-config-standard": "^22.0.0",
     "tap": "~12.4.1",
-    "tap-parser": "^10.0.1",
+    "tap-parser": "^11.0.1",
     "tape": "^5.3.1",
     "tape-filter": "^1.0.4",
     "testem": "^3.5.0",
