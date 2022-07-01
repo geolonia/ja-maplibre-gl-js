@@ -134,7 +134,7 @@
     "pixelmatch": "^5.1.0",
     "pngjs": "^6.0.0",
     "postcss": "^8.3.11",
-    "postcss-cli": "^9.0.2",
+    "postcss-cli": "^10.0.0",
     "postcss-inline-svg": "^5.0.0",
     "pretty-bytes": "^5.1.0",
     "puppeteer": "^11.0.0",
