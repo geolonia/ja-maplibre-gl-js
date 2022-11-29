@@ -162,25 +162,41 @@ const defaultOptions = {
     crossSourceCollisions: true
 } as CompleteMapOptions;
 
+// /**
+//  * The `Map` object represents the map on your page. It exposes methods
+//  * and properties that enable you to programmatically change the map,
+//  * and fires events as users interact with it.
+//  *
+//  * You create a `Map` by specifying a `container` and other options.
+//  * Then Mapbox GL JS initializes the map on the page and returns your `Map`
+//  * object.
+//  *
+//  * @extends Evented
+//  * @param {Object} options
+//  * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
+//  * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+//  * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
+//  * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+//  * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+//  * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
+//  * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
+//  * such JSON.
 /**
- * The `Map` object represents the map on your page. It exposes methods
- * and properties that enable you to programmatically change the map,
- * and fires events as users interact with it.
+ * `Map` オブジェクトは、ページ上の地図を表します。プログラムによって地図を操作するための
+ * メソッドとプロパティが用意され、ユーザーが地図を操作したときにはイベントが発生します。
  *
- * You create a `Map` by specifying a `container` and other options.
- * Then Mapbox GL JS initializes the map on the page and returns your `Map`
- * object.
+ * `container` やその他のオプションを指定して `Map` を作成します。
+ * その後、Mapbox GL JS がページ上の地図を初期化し、`Map` オブジェクトを返します。
  *
  * @extends Evented
  * @param {Object} options
- * @param {HTMLElement|string} options.container The HTML element in which Mapbox GL JS will render the map, or the element's string `id`. The specified element must have no children.
- * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
- * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
- * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
- * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
- * @param {Object|string} [options.style] The map's Mapbox style. This must be an a JSON object conforming to
- * the schema described in the [Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/), or a URL to
- * such JSON.
+ * @param {HTMLElement|string} options.container Mapbox GL JS が地図をレンダリングする HTML 要素、またはその要素の文字列 `id` を指定します。指定された要素は子要素を持ってはいけません。
+ * @param {number} [options.minZoom=0] 地図の最小表示倍率（0〜24）。
+ * @param {number} [options.maxZoom=22] 地図の最大表示倍率（0〜24）。
+ * @param {number} [options.minPitch=0] 地図の最小ピッチ（0〜60）。
+ * @param {number} [options.maxPitch=60] 地図の最大ピッチ（0〜60）。
+ * @param {Object|string} [options.style] 地図の Mapbox スタイル。[Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/)
+ * に記されたスキーマに準拠した JSON オブジェクトか、そのような JSON への URL である必要があります。
  *
  * To load a style from the Mapbox API, you can use a URL of the form `mapbox://styles/:owner/:style`,
  * where `:owner` is your Mapbox account name and `:style` is the style ID. Or you can use one of the following
