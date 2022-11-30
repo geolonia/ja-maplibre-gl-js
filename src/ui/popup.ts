@@ -3,14 +3,14 @@ import {Event, Evented} from '../util/evented';
 import {MapMouseEvent} from '../ui/events';
 import DOM from '../util/dom';
 import LngLat from '../geo/lng_lat';
-import Point, {PointLike} from '../util/point';
+import Point from '@mapbox/point-geometry';
 import smartWrap from '../util/smart_wrap';
 import {anchorTranslate, applyAnchorClass} from './anchor';
 
 import type {PositionAnchor} from './anchor';
-
 import type Map from './map';
 import type {LngLatLike} from '../geo/lng_lat';
+import type {PointLike} from './camera';
 
 const defaultOptions = {
     closeButton: true,
@@ -21,18 +21,18 @@ const defaultOptions = {
 };
 
 export type Offset = number | PointLike | {
-  [_ in PositionAnchor]: PointLike;
+    [_ in PositionAnchor]: PointLike;
 };
 
 export type PopupOptions = {
-  closeButton?: boolean;
-  closeOnClick?: boolean;
-  closeOnMove?: boolean;
-  focusAfterOpen?: boolean;
-  anchor?: PositionAnchor;
-  offset?: Offset;
-  className?: string;
-  maxWidth?: string;
+    closeButton?: boolean;
+    closeOnClick?: boolean;
+    closeOnMove?: boolean;
+    focusAfterOpen?: boolean;
+    anchor?: PositionAnchor;
+    offset?: Offset;
+    className?: string;
+    maxWidth?: string;
 };
 
 const focusQuerySelector = [
@@ -116,7 +116,7 @@ export default class Popup extends Evented {
     /**
      * Adds the popup to a map.
      *
-     * @param {Map} map The Mapbox GL JS map to add the popup to.
+     * @param {Map} map The MapLibre GL JS map to add the popup to.
      * @returns {Popup} `this`
      * @example
      * new maplibregl.Popup()
@@ -148,9 +148,9 @@ export default class Popup extends Evented {
             this._map.on('mousemove', this._onMouseMove);
             this._map.on('mouseup', this._onMouseUp);
             if (this._container) {
-                this._container.classList.add('maplibregl-popup-track-pointer', 'mapboxgl-popup-track-pointer');
+                this._container.classList.add('maplibregl-popup-track-pointer');
             }
-            this._map._canvasContainer.classList.add('maplibregl-track-pointer', 'mapboxgl-track-pointer');
+            this._map._canvasContainer.classList.add('maplibregl-track-pointer');
         } else {
             this._map.on('move', this._update);
         }
@@ -270,9 +270,9 @@ export default class Popup extends Evented {
             this._map.on('move', this._update);
             this._map.off('mousemove', this._onMouseMove);
             if (this._container) {
-                this._container.classList.remove('maplibregl-popup-track-pointer', 'mapboxgl-popup-track-pointer');
+                this._container.classList.remove('maplibregl-popup-track-pointer');
             }
-            this._map._canvasContainer.classList.remove('maplibregl-track-pointer', 'mapboxgl-track-pointer');
+            this._map._canvasContainer.classList.remove('maplibregl-track-pointer');
         }
 
         return this;
@@ -297,9 +297,9 @@ export default class Popup extends Evented {
             this._map.on('mousemove', this._onMouseMove);
             this._map.on('drag', this._onDrag);
             if (this._container) {
-                this._container.classList.add('maplibregl-popup-track-pointer', 'mapboxgl-popup-track-pointer');
+                this._container.classList.add('maplibregl-popup-track-pointer');
             }
-            this._map._canvasContainer.classList.add('maplibregl-track-pointer', 'mapboxgl-track-pointer');
+            this._map._canvasContainer.classList.add('maplibregl-track-pointer');
         }
 
         return this;
@@ -419,7 +419,7 @@ export default class Popup extends Evented {
                 }
             }
         } else {
-            this._content = DOM.create('div', 'maplibregl-popup-content mapboxgl-popup-content', this._container);
+            this._content = DOM.create('div', 'maplibregl-popup-content', this._container);
         }
 
         // The close button should be the last tabbable element inside the popup for a good keyboard UX.
@@ -491,7 +491,7 @@ export default class Popup extends Evented {
 
     _createCloseButton() {
         if (this.options.closeButton) {
-            this._closeButton = DOM.create('button', 'maplibregl-popup-close-button mapboxgl-popup-close-button', this._content);
+            this._closeButton = DOM.create('button', 'maplibregl-popup-close-button', this._content);
             this._closeButton.type = 'button';
             this._closeButton.setAttribute('aria-label', 'Close popup');
             this._closeButton.innerHTML = '&#215;';
@@ -517,8 +517,8 @@ export default class Popup extends Evented {
         if (!this._map || !hasPosition || !this._content) { return; }
 
         if (!this._container) {
-            this._container = DOM.create('div', 'maplibregl-popup mapboxgl-popup', this._map.getContainer());
-            this._tip       = DOM.create('div', 'maplibregl-popup-tip mapboxgl-popup-tip', this._container);
+            this._container = DOM.create('div', 'maplibregl-popup', this._map.getContainer());
+            this._tip       = DOM.create('div', 'maplibregl-popup-tip', this._container);
             this._container.appendChild(this._content);
             if (this.options.className) {
                 this.options.className.split(' ').forEach(name =>
@@ -526,7 +526,7 @@ export default class Popup extends Evented {
             }
 
             if (this._trackPointer) {
-                this._container.classList.add('maplibregl-popup-track-pointer', 'mapboxgl-popup-track-pointer');
+                this._container.classList.add('maplibregl-popup-track-pointer');
             }
         }
 

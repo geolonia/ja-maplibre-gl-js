@@ -1,9 +1,7 @@
 import {getTileBBox} from '@mapbox/whoots-js';
 import EXTENT from '../data/extent';
-import Point from '../util/point';
+import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
-
-import assert from 'assert';
 import {register} from '../util/web_worker_transfer';
 import {mat4} from 'gl-matrix';
 
@@ -14,9 +12,11 @@ export class CanonicalTileID {
     key: string;
 
     constructor(z: number, x: number, y: number) {
-        assert(z >= 0 && z <= 25);
-        assert(x >= 0 && x < Math.pow(2, z));
-        assert(y >= 0 && y < Math.pow(2, z));
+
+        if (z < 0 || z > 25 || y < 0 || y >= Math.pow(2, z) || x < 0 || x >= Math.pow(2, z)) {
+            throw new Error(`x=${x}, y=${y}, z=${z} outside of bounds. 0<=x<${Math.pow(2, z)}, 0<=y<${Math.pow(2, z)} 0<=z<=25 `);
+        }
+
         this.z = z;
         this.x = x;
         this.y = y;
@@ -28,7 +28,7 @@ export class CanonicalTileID {
     }
 
     // given a list of urls, choose a url template and return a tile URL
-    url(urls: Array<string>, scheme?: string | null) {
+    url(urls: Array<string>, pixelRatio: number, scheme?: string | null) {
         const bbox = getTileBBox(this.x, this.y, this.z);
         const quadkey = getQuadkey(this.z, this.x, this.y);
 
@@ -37,9 +37,14 @@ export class CanonicalTileID {
             .replace(/{z}/g, String(this.z))
             .replace(/{x}/g, String(this.x))
             .replace(/{y}/g, String(scheme === 'tms' ? (Math.pow(2, this.z) - this.y - 1) : this.y))
-            .replace(/{ratio}/g, devicePixelRatio > 1 ? '@2x' : '')
+            .replace(/{ratio}/g, pixelRatio > 1 ? '@2x' : '')
             .replace(/{quadkey}/g, quadkey)
             .replace(/{bbox-epsg-3857}/g, bbox);
+    }
+
+    isChildOf(parent: CanonicalTileID) {
+        const dz = this.z - parent.z;
+        return  dz > 0 && parent.x === (this.x >> dz) && parent.y === (this.y >> dz);
     }
 
     getTilePoint(coord: MercatorCoordinate) {
@@ -74,11 +79,15 @@ export class OverscaledTileID {
     posMatrix: mat4;
 
     constructor(overscaledZ: number, wrap: number, z: number, x: number, y: number) {
-        assert(overscaledZ >= z);
+        if (overscaledZ < z) throw new Error(`overscaledZ should be >= z; overscaledZ = ${overscaledZ}; z = ${z}`);
         this.overscaledZ = overscaledZ;
         this.wrap = wrap;
         this.canonical = new CanonicalTileID(z, +x, +y);
         this.key = calculateKey(wrap, overscaledZ, z, x, y);
+    }
+
+    clone() {
+        return new OverscaledTileID(this.overscaledZ, this.wrap, this.canonical.z, this.canonical.x, this.canonical.y);
     }
 
     equals(id: OverscaledTileID) {
@@ -86,7 +95,7 @@ export class OverscaledTileID {
     }
 
     scaledTo(targetZ: number) {
-        assert(targetZ <= this.overscaledZ);
+        if (targetZ > this.overscaledZ) throw new Error(`targetZ > this.overscaledZ; targetZ = ${targetZ}; overscaledZ = ${this.overscaledZ}`);
         const zDifference = this.canonical.z - targetZ;
         if (targetZ > this.canonical.z) {
             return new OverscaledTileID(targetZ, this.wrap, this.canonical.z, this.canonical.x, this.canonical.y);
@@ -101,7 +110,7 @@ export class OverscaledTileID {
      * when withWrap == false, implements the same as this.scaledTo(z).wrapped().key.
      */
     calculateScaledKey(targetZ: number, withWrap: boolean): string {
-        assert(targetZ <= this.overscaledZ);
+        if (targetZ > this.overscaledZ) throw new Error(`targetZ > this.overscaledZ; targetZ = ${targetZ}; overscaledZ = ${this.overscaledZ}`);
         const zDifference = this.canonical.z - targetZ;
         if (targetZ > this.canonical.z) {
             return calculateKey(this.wrap * +withWrap, targetZ, this.canonical.z, this.canonical.x, this.canonical.y);

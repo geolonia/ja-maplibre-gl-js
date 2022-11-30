@@ -1,14 +1,13 @@
 import FeatureIndex from '../data/feature_index';
 
 import {performSymbolLayout} from '../symbol/symbol_layout';
-import {CollisionBoxArray} from '../data/array_types';
+import {CollisionBoxArray} from '../data/array_types.g';
 import DictionaryCoder from '../util/dictionary_coder';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import LineBucket from '../data/bucket/line_bucket';
 import FillBucket from '../data/bucket/fill_bucket';
 import FillExtrusionBucket from '../data/bucket/fill_extrusion_bucket';
 import {warnOnce, mapObject} from '../util/util';
-import assert from 'assert';
 import ImageAtlas from '../render/image_atlas';
 import GlyphAtlas from '../render/glyph_atlas';
 import EvaluationParameters from '../style/evaluation_parameters';
@@ -24,7 +23,7 @@ import type {
     WorkerTileParameters,
     WorkerTileCallback,
 } from '../source/worker_source';
-import type {PromoteIdSpecification} from '../style-spec/types';
+import type {PromoteIdSpecification} from '../style-spec/types.g';
 import type {VectorTile} from '@mapbox/vector-tile';
 
 class WorkerTile {
@@ -105,7 +104,9 @@ class WorkerTile {
             for (const family of layerFamilies[sourceLayerId]) {
                 const layer = family[0];
 
-                assert(layer.source === this.source);
+                if (layer.source !== this.source) {
+                    warnOnce(`layer.source = ${layer.source} does not equal this.source = ${this.source}`);
+                }
                 if (layer.minzoom && this.zoom < Math.floor(layer.minzoom)) continue;
                 if (layer.maxzoom && this.zoom >= layer.maxzoom) continue;
                 if (layer.visibility === 'none') continue;
@@ -130,9 +131,9 @@ class WorkerTile {
 
         let error: Error;
         let glyphMap: {
-          [_: string]: {
-            [_: number]: StyleGlyph;
-          };
+            [_: string]: {
+                [_: number]: StyleGlyph;
+            };
         };
         let iconMap: {[_: string]: StyleImage};
         let patternMap: {[_: string]: StyleImage};
@@ -189,7 +190,15 @@ class WorkerTile {
                     const bucket = buckets[key];
                     if (bucket instanceof SymbolBucket) {
                         recalculateLayers(bucket.layers, this.zoom, availableImages);
-                        performSymbolLayout(bucket, glyphMap, glyphAtlas.positions, iconMap, imageAtlas.iconPositions, this.showCollisionBoxes, this.tileID.canonical);
+                        performSymbolLayout({
+                            bucket,
+                            glyphMap,
+                            glyphPositions: glyphAtlas.positions,
+                            imageMap: iconMap,
+                            imagePositions: imageAtlas.iconPositions,
+                            showCollisionBoxes: this.showCollisionBoxes,
+                            canonical: this.tileID.canonical
+                        });
                     } else if (bucket.hasPattern &&
                         (bucket instanceof LineBucket ||
                          bucket instanceof FillBucket ||

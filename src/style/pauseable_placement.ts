@@ -7,13 +7,14 @@ import type StyleLayer from './style_layer';
 import type SymbolStyleLayer from './style_layer/symbol_style_layer';
 import type Tile from '../source/tile';
 import type {BucketPart} from '../symbol/placement';
+import Terrain from '../render/terrain';
 
 class LayerPlacement {
     _sortAcrossTiles: boolean;
     _currentTileIndex: number;
     _currentPartIndex: number;
     _seenCrossTileIDs: {
-      [k in string | number]: boolean;
+        [k in string | number]: boolean;
     };
     _bucketParts: Array<BucketPart>;
 
@@ -69,6 +70,7 @@ class PauseablePlacement {
 
     constructor(
         transform: Transform,
+        terrain: Terrain,
         order: Array<string>,
         forceFullPlacement: boolean,
         showCollisionBoxes: boolean,
@@ -76,7 +78,7 @@ class PauseablePlacement {
         crossSourceCollisions: boolean,
         prevPlacement?: Placement
     ) {
-        this.placement = new Placement(transform, fadeDuration, crossSourceCollisions, prevPlacement);
+        this.placement = new Placement(transform, terrain, fadeDuration, crossSourceCollisions, prevPlacement);
         this._currentPlacementIndex = order.length - 1;
         this._forceFullPlacement = forceFullPlacement;
         this._showCollisionBoxes = showCollisionBoxes;

@@ -4,7 +4,7 @@ import {
 } from './query_features';
 import SourceCache from './source_cache';
 import Transform from '../geo/transform';
-import Point from '../util/point';
+import Point from '@mapbox/point-geometry';
 import Dispatcher from '../util/dispatcher';
 
 describe('QueryFeatures#rendered', () => {
@@ -29,7 +29,7 @@ describe('QueryFeatures#source', () => {
                 };
             }
         } as any as Dispatcher);
-        const result = querySourceFeatures(sourceCache, {} as any);
+        const result = querySourceFeatures(sourceCache, {});
         expect(result).toEqual([]);
     });
 

@@ -6,13 +6,15 @@ import validateGlyphsURL from './validate/validate_glyphs_url';
 
 import validateSource from './validate/validate_source';
 import validateLight from './validate/validate_light';
+import validateTerrain from './validate/validate_terrain';
 import validateLayer from './validate/validate_layer';
 import validateFilter from './validate/validate_filter';
 import validatePaintProperty from './validate/validate_paint_property';
 import validateLayoutProperty from './validate/validate_layout_property';
+import type {StyleSpecification} from './types.g';
 
 /**
- * Validate a Mapbox GL style against the style specification. This entrypoint,
+ * Validate a MapLibre GL style against the style specification. This entrypoint,
  * `maplibre-gl-style-spec/lib/validate_style.min`, is designed to produce as
  * small a browserify bundle as possible by omitting unnecessary functionality
  * and legacy style specifications.
@@ -26,7 +28,7 @@ import validateLayoutProperty from './validate/validate_layout_property';
  *   var validate = require('maplibre-gl-style-spec/lib/validate_style.min');
  *   var errors = validate(style);
  */
-function validateStyleMin(style, styleSpec = latestStyleSpec) {
+function validateStyleMin(style: StyleSpecification, styleSpec = latestStyleSpec) {
 
     let errors = [];
 
@@ -44,10 +46,10 @@ function validateStyleMin(style, styleSpec = latestStyleSpec) {
         }
     }));
 
-    if (style.constants) {
+    if (style['constants']) {
         errors = errors.concat(validateConstants({
             key: 'constants',
-            value: style.constants,
+            value: style['constants'],
             style,
             styleSpec
         }));
@@ -58,6 +60,7 @@ function validateStyleMin(style, styleSpec = latestStyleSpec) {
 
 validateStyleMin.source = wrapCleanErrors(validateSource);
 validateStyleMin.light = wrapCleanErrors(validateLight);
+validateStyleMin.terrain = wrapCleanErrors(validateTerrain);
 validateStyleMin.layer = wrapCleanErrors(validateLayer);
 validateStyleMin.filter = wrapCleanErrors(validateFilter);
 validateStyleMin.paintProperty = wrapCleanErrors(validatePaintProperty);

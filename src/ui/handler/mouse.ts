@@ -1,5 +1,5 @@
 import DOM from '../../util/dom';
-import type Point from '../../util/point';
+import type Point from '@mapbox/point-geometry';
 
 const LEFT_BUTTON = 0;
 const RIGHT_BUTTON = 2;
@@ -10,7 +10,7 @@ const BUTTONS_FLAGS = {
     [RIGHT_BUTTON]: 2
 };
 
-function buttonStillPressed(e: MouseEvent, button: number) {
+function buttonNoLongerPressed(e: MouseEvent, button: number) {
     const flag = BUTTONS_FLAGS[button];
     return e.buttons === undefined || (e.buttons & flag) !== flag;
 }
@@ -25,7 +25,7 @@ class MouseHandler {
     _clickTolerance: number;
 
     constructor(options: {
-      clickTolerance: number;
+        clickTolerance: number;
     }) {
         this.reset();
         this._clickTolerance = options.clickTolerance || 1;
@@ -61,7 +61,7 @@ class MouseHandler {
         if (!lastPoint) return;
         e.preventDefault();
 
-        if (buttonStillPressed(e, this._eventButton)) {
+        if (buttonNoLongerPressed(e, this._eventButton)) {
             // Some browsers don't fire a `mouseup` when the mouseup occurs outside
             // the window or iframe:
             // https://github.com/mapbox/mapbox-gl-js/issues/4622

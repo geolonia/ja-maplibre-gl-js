@@ -1,6 +1,4 @@
-import Point from './point';
-
-import assert from 'assert';
+import Point from '@mapbox/point-geometry';
 
 export default class DOM {
     private static readonly docStyle = typeof window !== 'undefined' && window.document && window.document.documentElement.style;
@@ -53,7 +51,7 @@ export default class DOM {
     public static addEventListener(target: any, type: any, callback: any, options: {
         passive?: boolean;
         capture?: boolean;
-      } = {}) {
+    } = {}) {
         if ('passive' in options) {
             target.addEventListener(type, callback, options);
         } else {
@@ -64,7 +62,7 @@ export default class DOM {
     public static removeEventListener(target: any, type: any, callback: any, options: {
         passive?: boolean;
         capture?: boolean;
-      } = {}) {
+    } = {}) {
         if ('passive' in options) {
             target.removeEventListener(type, callback, options);
         } else {
@@ -107,7 +105,6 @@ export default class DOM {
     }
 
     public static mouseButton(e: MouseEvent) {
-        assert(e.type === 'mousedown' || e.type === 'mouseup');
         return e.button;
     }
 

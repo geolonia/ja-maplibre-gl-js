@@ -11,29 +11,31 @@ const SIZE_PACK_FACTOR = 128;
 export {getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR};
 
 export type SizeData = {
-  kind: 'constant';
-  layoutSize: number;
+    kind: 'constant';
+    layoutSize: number;
 } | {
-  kind: 'source';
+    kind: 'source';
 } | {
-  kind: 'camera';
-  minZoom: number;
-  maxZoom: number;
-  minSize: number;
-  maxSize: number;
-  interpolationType: InterpolationType;
+    kind: 'camera';
+    minZoom: number;
+    maxZoom: number;
+    minSize: number;
+    maxSize: number;
+    interpolationType: InterpolationType;
 } | {
-  kind: 'composite';
-  minZoom: number;
-  maxZoom: number;
-  interpolationType: InterpolationType;
+    kind: 'composite';
+    minZoom: number;
+    maxZoom: number;
+    interpolationType: InterpolationType;
 };
+
+export type EvaluatedZoomSize = {uSizeT: number; uSize: number};
 
 // For {text,icon}-size, get the bucket-level data that will be needed by
 // the painter to set symbol-size-related uniforms
 function getSizeData(
-  tileZoom: number,
-  value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>
+    tileZoom: number,
+    value: PropertyValue<number, PossiblyEvaluatedPropertyValue<number>>
 ): SizeData {
     const {expression} = value;
 
@@ -75,20 +77,20 @@ function getSizeData(
 }
 
 function evaluateSizeForFeature(sizeData: SizeData,
-                                {
-                                    uSize,
-                                    uSizeT
-                                }: {
-                                  uSize: number;
-                                  uSizeT: number;
-                                },
-                                {
-                                    lowerSize,
-                                    upperSize
-                                }: {
-                                  lowerSize: number;
-                                  upperSize: number;
-                                }) {
+    {
+        uSize,
+        uSizeT
+    }: {
+        uSize: number;
+        uSizeT: number;
+    },
+    {
+        lowerSize,
+        upperSize
+    }: {
+        lowerSize: number;
+        upperSize: number;
+    }): number {
     if (sizeData.kind === 'source') {
         return lowerSize / SIZE_PACK_FACTOR;
     } else if (sizeData.kind === 'composite') {
@@ -97,7 +99,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     return uSize;
 }
 
-function evaluateSizeForZoom(sizeData: SizeData, zoom: number) {
+function evaluateSizeForZoom(sizeData: SizeData, zoom: number): EvaluatedZoomSize {
     let uSizeT = 0;
     let uSize = 0;
 

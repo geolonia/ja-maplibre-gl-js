@@ -14,13 +14,13 @@ import type {OverscaledTileID} from './tile_id';
  * @returns value in tile units
  * @private
  */
-export default function(
-  tile: {
-    tileID: OverscaledTileID;
-    tileSize: number;
-  },
-  pixelValue: number,
-  z: number
+export default function pixelsToTileUnits(
+    tile: {
+        tileID: OverscaledTileID;
+        tileSize: number;
+    },
+    pixelValue: number,
+    z: number
 ): number {
     return pixelValue * (EXTENT / (tile.tileSize * Math.pow(2, z - tile.tileID.overscaledZ)));
 }
