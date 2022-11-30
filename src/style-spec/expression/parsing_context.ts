@@ -1,6 +1,6 @@
 import Scope from './scope';
 import {checkSubtype} from './types';
-import ParsingError from './parsing_error';
+import ExpressionParsingError from './parsing_error';
 import Literal from './definitions/literal';
 import Assertion from './definitions/assertion';
 import Coercion from './definitions/coercion';
@@ -23,7 +23,7 @@ class ParsingContext {
     path: Array<number>;
     key: string;
     scope: Scope;
-    errors: Array<ParsingError>;
+    errors: Array<ExpressionParsingError>;
 
     // The expected type of this expression. Provided only to allow Expression
     // implementations to infer argument types: Expression#parse() need not
@@ -36,7 +36,7 @@ class ParsingContext {
         path: Array<number> = [],
         expectedType?: Type | null,
         scope: Scope = new Scope(),
-        errors: Array<ParsingError> = []
+        errors: Array<ExpressionParsingError> = []
     ) {
         this.registry = registry;
         this.path = path;
@@ -54,13 +54,13 @@ class ParsingContext {
      * @private
      */
     parse(
-      expr: unknown,
-      index?: number,
-      expectedType?: Type | null,
-      bindings?: Array<[string, Expression]>,
-      options: {
-        typeAnnotation?: 'assert' | 'coerce' | 'omit';
-      } = {}
+        expr: unknown,
+        index?: number,
+        expectedType?: Type | null,
+        bindings?: Array<[string, Expression]>,
+        options: {
+            typeAnnotation?: 'assert' | 'coerce' | 'omit';
+        } = {}
     ): Expression {
         if (index) {
             return this.concat(index, expectedType, bindings)._parse(expr, options);
@@ -69,10 +69,10 @@ class ParsingContext {
     }
 
     _parse(
-      expr: unknown,
-      options: {
-        typeAnnotation?: 'assert' | 'coerce' | 'omit';
-      }
+        expr: unknown,
+        options: {
+            typeAnnotation?: 'assert' | 'coerce' | 'omit';
+        }
     ): Expression {
         if (expr === null || typeof expr === 'string' || typeof expr === 'boolean' || typeof expr === 'number') {
             expr = ['literal', expr];
@@ -119,6 +119,8 @@ class ParsingContext {
                     if ((expected.kind === 'string' || expected.kind === 'number' || expected.kind === 'boolean' || expected.kind === 'object' || expected.kind === 'array') && actual.kind === 'value') {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'assert');
                     } else if ((expected.kind === 'color' || expected.kind === 'formatted' || expected.kind === 'resolvedImage') && (actual.kind === 'value' || actual.kind === 'string')) {
+                        parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
+                    } else if (expected.kind === 'padding' && (actual.kind === 'value' || actual.kind === 'number' || actual.kind === 'array')) {
                         parsed = annotate(parsed, expected, options.typeAnnotation || 'coerce');
                     } else if (this.checkSubtype(expected, actual)) {
                         return null;
@@ -181,7 +183,7 @@ class ParsingContext {
      */
     error(error: string, ...keys: Array<number>) {
         const key = `${this.key}${keys.map(k => `[${k}]`).join('')}`;
-        this.errors.push(new ParsingError(key, error));
+        this.errors.push(new ExpressionParsingError(key, error));
     }
 
     /**

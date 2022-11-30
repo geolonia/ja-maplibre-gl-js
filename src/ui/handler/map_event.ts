@@ -1,7 +1,7 @@
 import {MapMouseEvent, MapTouchEvent, MapWheelEvent} from '../events';
 import {Handler} from '../handler_manager';
 import type Map from '../map';
-import type Point from '../../util/point';
+import type Point from '@mapbox/point-geometry';
 
 export class MapEventHandler implements Handler {
 
@@ -10,7 +10,7 @@ export class MapEventHandler implements Handler {
     _map: Map;
 
     constructor(map: Map, options: {
-      clickTolerance: number;
+        clickTolerance: number;
     }) {
         this._map = map;
         this._clickTolerance = options.clickTolerance;
@@ -104,6 +104,7 @@ export class MapEventHandler implements Handler {
 export class BlockableMapEventHandler {
     _map: Map;
     _delayContextMenu: boolean;
+    _ignoreContextMenu: boolean;
     _contextMenuEvent: MouseEvent;
 
     constructor(map: Map) {
@@ -112,6 +113,7 @@ export class BlockableMapEventHandler {
 
     reset() {
         this._delayContextMenu = false;
+        this._ignoreContextMenu = true;
         delete this._contextMenuEvent;
     }
 
@@ -122,6 +124,7 @@ export class BlockableMapEventHandler {
 
     mousedown() {
         this._delayContextMenu = true;
+        this._ignoreContextMenu = false;
     }
 
     mouseup() {
@@ -135,7 +138,7 @@ export class BlockableMapEventHandler {
         if (this._delayContextMenu) {
             // Mac: contextmenu fired on mousedown; we save it until mouseup for consistency's sake
             this._contextMenuEvent = e;
-        } else {
+        } else if (!this._ignoreContextMenu) {
             // Windows: contextmenu fired on mouseup, so fire event now
             this._map.fire(new MapMouseEvent(e.type, this._map, e));
         }

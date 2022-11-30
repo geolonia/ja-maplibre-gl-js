@@ -1,10 +1,10 @@
+/* eslint-disable key-spacing */
 import potpack from 'potpack';
 
 import {Event, ErrorEvent, Evented} from '../util/evented';
 import {RGBAImage} from '../util/image';
 import {ImagePosition} from './image_atlas';
 import Texture from './texture';
-import assert from 'assert';
 import {renderStyleImage} from '../style/style_image';
 import {warnOnce} from '../util/util';
 
@@ -14,8 +14,8 @@ import type {PotpackBox} from 'potpack';
 import type {Callback} from '../types/callback';
 
 type Pattern = {
-  bin: PotpackBox;
-  position: ImagePosition;
+    bin: PotpackBox;
+    position: ImagePosition;
 };
 
 // When copied into the atlas texture, image data is padded by one pixel on each side. Icon
@@ -41,8 +41,8 @@ class ImageManager extends Evented {
     callbackDispatchedThisFrame: {[_: string]: boolean};
     loaded: boolean;
     requestors: Array<{
-      ids: Array<string>;
-      callback: Callback<{[_: string]: StyleImage}>;
+        ids: Array<string>;
+        callback: Callback<{[_: string]: StyleImage}>;
     }>;
 
     patterns: {[_: string]: Pattern};
@@ -87,7 +87,7 @@ class ImageManager extends Evented {
     }
 
     addImage(id: string, image: StyleImage) {
-        assert(!this.images[id]);
+        if (this.images[id]) throw new Error(`Image id ${id} already exist, use updateImage instead`);
         if (this._validate(id, image)) {
             this.images[id] = image;
         }
@@ -134,16 +134,15 @@ class ImageManager extends Evented {
 
     updateImage(id: string, image: StyleImage) {
         const oldImage = this.images[id];
-        assert(oldImage);
-        assert(oldImage.data.width === image.data.width);
-        assert(oldImage.data.height === image.data.height);
+        if (oldImage.data.width !== image.data.width || oldImage.data.height !== image.data.height) {
+            throw new Error(`size mismatch between old image (${oldImage.data.width}x${oldImage.data.height}) and new image (${image.data.width}x${image.data.height}).`);
+        }
         image.version = oldImage.version + 1;
         this.images[id] = image;
         this.updatedImages[id] = true;
     }
 
     removeImage(id: string) {
-        assert(this.images[id]);
         const image = this.images[id];
         delete this.images[id];
         delete this.patterns[id];
@@ -294,7 +293,7 @@ class ImageManager extends Evented {
             this.callbackDispatchedThisFrame[id] = true;
 
             const image = this.images[id];
-            assert(image);
+            if (!image) warnOnce(`Image with ID: "${id}" was not found`);
 
             const updated = renderStyleImage(image);
             if (updated) {

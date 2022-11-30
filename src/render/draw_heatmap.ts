@@ -4,6 +4,8 @@ import DepthMode from '../gl/depth_mode';
 import StencilMode from '../gl/stencil_mode';
 import ColorMode from '../gl/color_mode';
 import CullFaceMode from '../gl/cull_face_mode';
+import Context from '../gl/context';
+import Framebuffer from '../gl/framebuffer';
 import {
     heatmapUniformValues,
     heatmapTextureUniformValues
@@ -53,8 +55,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
             const {zoom} = painter.transform;
 
             program.draw(context, gl.TRIANGLES, DepthMode.disabled, stencilMode, colorMode, CullFaceMode.disabled,
-                heatmapUniformValues(coord.posMatrix,
-                    tile, zoom, layer.paint.get('heatmap-intensity')),
+                heatmapUniformValues(coord.posMatrix, tile, zoom, layer.paint.get('heatmap-intensity')), null,
                 layer.id, bucket.layoutVertexBuffer, bucket.indexBuffer,
                 bucket.segments, layer.paint, painter.transform.zoom,
                 programConfiguration);
@@ -68,7 +69,7 @@ function drawHeatmap(painter: Painter, sourceCache: SourceCache, layer: HeatmapS
     }
 }
 
-function bindFramebuffer(context, painter, layer) {
+function bindFramebuffer(context: Context, painter: Painter, layer: HeatmapStyleLayer) {
     const gl = context.gl;
     context.activeTexture.set(gl.TEXTURE1);
 
@@ -95,7 +96,7 @@ function bindFramebuffer(context, painter, layer) {
     }
 }
 
-function bindTextureToFramebuffer(context, painter, texture, fbo) {
+function bindTextureToFramebuffer(context: Context, painter: Painter, texture: WebGLTexture, fbo: Framebuffer) {
     const gl = context.gl;
     // Use the higher precision half-float texture where available (producing much smoother looking heatmaps);
     // Otherwise, fall back to a low precision texture
@@ -104,7 +105,7 @@ function bindTextureToFramebuffer(context, painter, texture, fbo) {
     fbo.colorAttachment.set(texture);
 }
 
-function renderTextureToMap(painter, layer) {
+function renderTextureToMap(painter: Painter, layer: HeatmapStyleLayer) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -125,7 +126,7 @@ function renderTextureToMap(painter, layer) {
 
     painter.useProgram('heatmapTexture').draw(context, gl.TRIANGLES,
         DepthMode.disabled, StencilMode.disabled, painter.colorModeForRenderPass(), CullFaceMode.disabled,
-        heatmapTextureUniformValues(painter, layer, 0, 1),
+        heatmapTextureUniformValues(painter, layer, 0, 1), null,
         layer.id, painter.viewportBuffer, painter.quadTriangleIndexBuffer,
         painter.viewportSegments, layer.paint, painter.transform.zoom);
 }

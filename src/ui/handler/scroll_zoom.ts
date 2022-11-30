@@ -1,4 +1,3 @@
-import assert from 'assert';
 import DOM from '../../util/dom';
 
 import {ease as _ease, bindAll, bezier} from '../../util/util';
@@ -8,7 +7,7 @@ import LngLat from '../../geo/lng_lat';
 
 import type Map from '../map';
 import type HandlerManager from '../handler_manager';
-import type Point from '../../util/point';
+import type Point from '@mapbox/point-geometry';
 
 // deltaY value for mouse scroll wheel identification
 const wheelZoomDelta = 4.000244140625;
@@ -47,9 +46,9 @@ class ScrollZoomHandler {
     _delta: number;
     _easing: ((a: number) => number);
     _prevEase: {
-      start: number;
-      duration: number;
-      easing: (_: number) => number;
+        start: number;
+        duration: number;
+        easing: (_: number) => number;
     };
 
     _frameId: boolean;
@@ -86,12 +85,12 @@ class ScrollZoomHandler {
     }
 
     /**
-    * Set the zoom rate of a mouse wheel
-    * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
-    * @example
-    * // Slow down zoom of mouse wheel
-    * map.scrollZoom.setWheelZoomRate(1/600);
-    */
+     * Set the zoom rate of a mouse wheel
+     * @param {number} [wheelZoomRate=1/450] The rate used to scale mouse wheel movement to a zoom value.
+     * @example
+     * // Slow down zoom of mouse wheel
+     * map.scrollZoom.setWheelZoomRate(1/600);
+     */
     setWheelZoomRate(wheelZoomRate: number) {
         this._wheelZoomRate = wheelZoomRate;
     }
@@ -148,6 +147,13 @@ class ScrollZoomHandler {
 
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
+        if (this._map._cooperativeGestures) {
+            if (this._map._metaPress) {
+                e.preventDefault();
+            } else {
+                return;
+            }
+        }
         let value = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? e.deltaY * 40 : e.deltaY;
         const now = browser.now(),
             timeDelta = now - (this._lastWheelEventTime || 0);
@@ -275,7 +281,6 @@ class ScrollZoomHandler {
         let finished = false;
         let zoom;
         if (this._type === 'wheel' && startZoom && easing) {
-            assert(easing && typeof startZoom === 'number');
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);

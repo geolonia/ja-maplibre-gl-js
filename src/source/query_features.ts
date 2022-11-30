@@ -3,9 +3,9 @@ import type StyleLayer from '../style/style_layer';
 import type CollisionIndex from '../symbol/collision_index';
 import type Transform from '../geo/transform';
 import type {RetainedQueryData} from '../symbol/placement';
-import type {FilterSpecification} from '../style-spec/types';
-import type Point from '../util/point';
-import assert from 'assert';
+import type {FilterSpecification} from '../style-spec/types.g';
+import type {MapGeoJSONFeature} from '../util/vectortile_to_geojson';
+import type Point from '@mapbox/point-geometry';
 import {mat4} from 'gl-matrix';
 
 /*
@@ -48,7 +48,7 @@ export function queryRenderedFeatures(
         availableImages: Array<string>;
     },
     transform: Transform
-) {
+): { [key: string]: Array<{featureIndex: number; feature: MapGeoJSONFeature}> } {
 
     const has3DLayer = queryIncludes3DLayer(params && params.layers, styleLayers, sourceCache.id);
     const maxPitchScaleFactor = transform.maxPitchScaleFactor();
@@ -78,7 +78,7 @@ export function queryRenderedFeatures(
     // Merge state from SourceCache into the results
     for (const layerID in result) {
         result[layerID].forEach((featureWrapper) => {
-            const feature = featureWrapper.feature;
+            const feature = featureWrapper.feature as MapGeoJSONFeature;
             const state = sourceCache.getFeatureState(feature.layer['source-layer'], feature.id);
             feature.source = feature.layer.source;
             if (feature.layer['source-layer']) {
@@ -91,18 +91,18 @@ export function queryRenderedFeatures(
 }
 
 export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
-                            serializedLayers: {[_: string]: StyleLayer},
-                            sourceCaches: {[_: string]: SourceCache},
-                            queryGeometry: Array<Point>,
-                            params: {
-                              filter: FilterSpecification;
-                              layers: Array<string>;
-                              availableImages: Array<string>;
-                            },
-                            collisionIndex: CollisionIndex,
-                            retainedQueryData: {
-                              [_: number]: RetainedQueryData;
-                            }) {
+    serializedLayers: {[_: string]: StyleLayer},
+    sourceCaches: {[_: string]: SourceCache},
+    queryGeometry: Array<Point>,
+    params: {
+        filter: FilterSpecification;
+        layers: Array<string>;
+        availableImages: Array<string>;
+    },
+    collisionIndex: CollisionIndex,
+    retainedQueryData: {
+        [_: number]: RetainedQueryData;
+    }) {
     const result = {};
     const renderedSymbols = collisionIndex.queryRenderedSymbols(queryGeometry);
     const bucketQueryData = [];
@@ -113,14 +113,14 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
 
     for (const queryData of bucketQueryData) {
         const bucketSymbols = queryData.featureIndex.lookupSymbolFeatures(
-                renderedSymbols[queryData.bucketInstanceId],
-                serializedLayers,
-                queryData.bucketIndex,
-                queryData.sourceLayerIndex,
-                params.filter,
-                params.layers,
-                params.availableImages,
-                styleLayers);
+            renderedSymbols[queryData.bucketInstanceId],
+            serializedLayers,
+            queryData.bucketIndex,
+            queryData.sourceLayerIndex,
+            params.filter,
+            params.layers,
+            params.availableImages,
+            styleLayers);
 
         for (const layerID in bucketSymbols) {
             const resultFeatures = result[layerID] = result[layerID] || [];
@@ -136,8 +136,6 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
                     // we sort each feature based on the first matching symbol instance.
                     const sortedA = featureSortOrder.indexOf(a.featureIndex);
                     const sortedB = featureSortOrder.indexOf(b.featureIndex);
-                    assert(sortedA >= 0);
-                    assert(sortedB >= 0);
                     return sortedB - sortedA;
                 } else {
                     // Bucket hasn't been re-sorted based on angle, so use the
@@ -169,8 +167,8 @@ export function queryRenderedSymbols(styleLayers: {[_: string]: StyleLayer},
 }
 
 export function querySourceFeatures(sourceCache: SourceCache, params: {
-    sourceLayer: string;
-    filter: Array<any>;
+    sourceLayer?: string;
+    filter?: FilterSpecification;
     validate?: boolean;
 }) {
     const tiles = sourceCache.getRenderableIds().map((id) => {

@@ -6,7 +6,6 @@ import GeoJSONWrapper from './geojson_wrapper';
 import vtpbf from 'vt-pbf';
 import Supercluster from 'supercluster';
 import geojsonvt from 'geojson-vt';
-import assert from 'assert';
 import VectorTileWorkerSource from './vector_tile_worker_source';
 import {createExpression} from '../style-spec/expression';
 
@@ -21,26 +20,30 @@ import type StyleLayerIndex from '../style/style_layer_index';
 import type {LoadVectorDataCallback} from './vector_tile_worker_source';
 import type {RequestParameters, ResponseCallback} from '../util/ajax';
 import type {Callback} from '../types/callback';
+import type {Cancelable} from '../types/cancelable';
+import {isUpdateableGeoJSON, type GeoJSONSourceDiff, applySourceDiff, toUpdateable, GeoJSONFeatureId} from './geojson_source_diff';
 
 export type LoadGeoJSONParameters = {
-  request?: RequestParameters;
-  data?: string;
-  source: string;
-  cluster: boolean;
-  superclusterOptions?: any;
-  geojsonVtOptions?: any;
-  clusterProperties?: any;
-  filter?: Array<unknown>;
+    request?: RequestParameters;
+    data?: string;
+    dataDiff?: GeoJSONSourceDiff;
+    source: string;
+    cluster: boolean;
+    superclusterOptions?: any;
+    geojsonVtOptions?: any;
+    clusterProperties?: any;
+    filter?: Array<unknown>;
+    promoteId?: string;
 };
 
-export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>) => void;
+export type LoadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>) => Cancelable;
 
 export interface GeoJSONIndex {
-  getTile(z: number, x: number, y: number): any;
-  // supercluster methods
-  getClusterExpansionZoom(clusterId: number): number;
-  getChildren(clusterId: number): Array<GeoJSON.Feature>;
-  getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSON.Feature>;
+    getTile(z: number, x: number, y: number): any;
+    // supercluster methods
+    getClusterExpansionZoom(clusterId: number): number;
+    getChildren(clusterId: number): Array<GeoJSON.Feature>;
+    getLeaves(clusterId: number, limit: number, offset: number): Array<GeoJSON.Feature>;
 }
 
 function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataCallback): (() => void) | void {
@@ -72,10 +75,6 @@ function loadGeoJSONTile(params: WorkerTileParameters, callback: LoadVectorDataC
     });
 }
 
-export type SourceState = // Source empty or data loaded
-'Idle' | // Data finished loading, but discard 'loadData' messages until receiving 'coalesced'
-'Coalescing' | 'NeedsLoadData';  // 'loadData' received while coalescing, trigger one more 'loadData' on receiving 'coalesced'
-
 /**
  * The {@link WorkerSource} implementation that supports {@link GeoJSONSource}.
  * This class is designed to be easily reused to support custom source types
@@ -87,13 +86,13 @@ export type SourceState = // Source empty or data loaded
  * @private
  */
 class GeoJSONWorkerSource extends VectorTileWorkerSource {
-    _state: SourceState;
     _pendingCallback: Callback<{
-      resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>};
-      abandoned?: boolean;
+        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>};
+        abandoned?: boolean;
     }>;
-    _pendingLoadDataParams: LoadGeoJSONParameters;
+    _pendingRequest: Cancelable;
     _geoJSONIndex: GeoJSONIndex;
+    _dataUpdateable = new Map<GeoJSONFeatureId, GeoJSON.Feature>();
 
     /**
      * @param [loadGeoJSON] Optional method for custom loading/parsing of
@@ -117,52 +116,31 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * expecting `callback(error, data)` to be called with either an error or a
      * parsed GeoJSON object.
      *
-     * When `loadData` requests come in faster than they can be processed,
-     * they are coalesced into a single request using the latest data.
-     * See {@link GeoJSONWorkerSource#coalesce}
+     * When a `loadData` request comes in while a previous one is being processed,
+     * the previous one is aborted.
      *
      * @param params
      * @param callback
      * @private
      */
     loadData(params: LoadGeoJSONParameters, callback: Callback<{
-      resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>};
-      abandoned?: boolean;
+        resourceTiming?: {[_: string]: Array<PerformanceResourceTiming>};
+        abandoned?: boolean;
     }>) {
+        this._pendingRequest?.cancel();
         if (this._pendingCallback) {
             // Tell the foreground the previous call has been abandoned
             this._pendingCallback(null, {abandoned: true});
         }
-        this._pendingCallback = callback;
-        this._pendingLoadDataParams = params;
-
-        if (this._state &&
-            this._state !== 'Idle') {
-            this._state = 'NeedsLoadData';
-        } else {
-            this._state = 'Coalescing';
-            this._loadData();
-        }
-    }
-
-    /**
-     * Internal implementation: called directly by `loadData`
-     * or by `coalesce` using stored parameters.
-     */
-    _loadData() {
-        if (!this._pendingCallback || !this._pendingLoadDataParams) {
-            assert(false);
-            return;
-        }
-        const callback = this._pendingCallback;
-        const params = this._pendingLoadDataParams;
-        delete this._pendingCallback;
-        delete this._pendingLoadDataParams;
 
         const perf = (params && params.request && params.request.collectResourceTiming) ?
             new RequestPerformance(params.request) : false;
 
-        this.loadGeoJSON(params, (err?: Error | null, data?: any | null) => {
+        this._pendingCallback = callback;
+        this._pendingRequest = this.loadGeoJSON(params, (err?: Error | null, data?: any | null) => {
+            delete this._pendingCallback;
+            delete this._pendingRequest;
+
             if (err || !data) {
                 return callback(err);
             } else if (typeof data !== 'object') {
@@ -205,35 +183,6 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     /**
-     * While processing `loadData`, we coalesce all further
-     * `loadData` messages into a single call to _loadData
-     * that will happen once we've finished processing the
-     * first message. {@link GeoJSONSource#_updateWorkerData}
-     * is responsible for sending us the `coalesce` message
-     * at the time it receives a response from `loadData`
-     *
-     *          State: Idle
-     *          ↑          |
-     *     'coalesce'   'loadData'
-     *          |     (triggers load)
-     *          |          ↓
-     *        State: Coalescing
-     *          ↑          |
-     *   (triggers load)   |
-     *     'coalesce'   'loadData'
-     *          |          ↓
-     *        State: NeedsLoadData
-     */
-    coalesce() {
-        if (this._state === 'Coalescing') {
-            this._state = 'Idle';
-        } else if (this._state === 'NeedsLoadData') {
-            this._state = 'Coalescing';
-            this._loadData();
-        }
-    }
-
-    /**
     * Implements {@link WorkerSource#reloadTile}.
     *
     * If the tile is loaded, uses the implementation in VectorTileWorkerSource.
@@ -264,28 +213,49 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
      * @param params
      * @param [params.url] A URL to the remote GeoJSON data.
      * @param [params.data] Literal GeoJSON data. Must be provided if `params.url` is not.
+     * @returns {Cancelable} A Cancelable object.
      * @private
      */
-    loadGeoJSON(params: LoadGeoJSONParameters, callback: ResponseCallback<any>) {
+    loadGeoJSON = (params: LoadGeoJSONParameters, callback: ResponseCallback<any>): Cancelable => {
+        const {promoteId} = params;
         // Because of same origin issues, urls must either include an explicit
         // origin or absolute path.
         // ie: /foo/bar.json or http://example.com/bar.json
         // but not ../foo/bar.json
         if (params.request) {
-            getJSON(params.request, callback);
+            return getJSON(params.request, (
+                error?: Error,
+                data?: any,
+                cacheControl?: string,
+                expires?: string
+            ) => {
+                this._dataUpdateable = isUpdateableGeoJSON(data, promoteId) ? toUpdateable(data, promoteId) : undefined;
+                callback(error, data, cacheControl, expires);
+            });
         } else if (typeof params.data === 'string') {
             try {
-                return callback(null, JSON.parse(params.data));
+                const parsed = JSON.parse(params.data);
+                this._dataUpdateable = isUpdateableGeoJSON(parsed, promoteId) ? toUpdateable(parsed, promoteId) : undefined;
+                callback(null, parsed);
             } catch (e) {
-                return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+                callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+            }
+        } else if (params.dataDiff) {
+            if (this._dataUpdateable) {
+                applySourceDiff(this._dataUpdateable, params.dataDiff, promoteId);
+                callback(null, {type: 'FeatureCollection', features: Array.from(this._dataUpdateable.values())});
+            } else {
+                callback(new Error(`Cannot update existing geojson data in ${params.source}`));
             }
         } else {
-            return callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
+            callback(new Error(`Input data given to '${params.source}' is not a valid GeoJSON object.`));
         }
-    }
+
+        return {cancel: () => {}};
+    };
 
     removeSource(params: {
-      source: string;
+        source: string;
     }, callback: WorkerTileCallback) {
         if (this._pendingCallback) {
             // Don't leak callbacks
@@ -295,7 +265,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     getClusterExpansionZoom(params: {
-      clusterId: number;
+        clusterId: number;
     }, callback: Callback<number>) {
         try {
             callback(null, this._geoJSONIndex.getClusterExpansionZoom(params.clusterId));
@@ -305,7 +275,7 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     getClusterChildren(params: {
-      clusterId: number;
+        clusterId: number;
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getChildren(params.clusterId));
@@ -315,9 +285,9 @@ class GeoJSONWorkerSource extends VectorTileWorkerSource {
     }
 
     getClusterLeaves(params: {
-      clusterId: number;
-      limit: number;
-      offset: number;
+        clusterId: number;
+        limit: number;
+        offset: number;
     }, callback: Callback<Array<GeoJSON.Feature>>) {
         try {
             callback(null, this._geoJSONIndex.getLeaves(params.clusterId, params.limit, params.offset));
@@ -342,9 +312,6 @@ function getSuperclusterOptions({superclusterOptions, clusterProperties}: { supe
         const mapExpressionParsed = createExpression(mapExpression);
         const reduceExpressionParsed = createExpression(
             typeof operator === 'string' ? [operator, ['accumulated'], ['get', key]] : operator);
-
-        assert(mapExpressionParsed.result === 'success');
-        assert(reduceExpressionParsed.result === 'success');
 
         mapExpressions[key] = mapExpressionParsed.value;
         reduceExpressions[key] = reduceExpressionParsed.value;

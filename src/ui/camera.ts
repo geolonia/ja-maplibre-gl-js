@@ -3,16 +3,27 @@ import {number as interpolate} from '../style-spec/util/interpolate';
 import browser from '../util/browser';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
-import Point, {PointLike} from '../util/point';
+import Point from '@mapbox/point-geometry';
 import {Event, Evented} from '../util/evented';
-import assert from 'assert';
 import {Debug} from '../util/debug';
+import Terrain from '../render/terrain';
 
 import type Transform from '../geo/transform';
 import type {LngLatLike} from '../geo/lng_lat';
 import type {LngLatBoundsLike} from '../geo/lng_lat_bounds';
 import type {TaskID} from '../util/task_queue';
 import type {PaddingOptions} from '../geo/edge_insets';
+import MercatorCoordinate from '../geo/mercator_coordinate';
+
+/**
+ * A [Point](https://github.com/mapbox/point-geometry) or an array of two numbers representing `x` and `y` screen coordinates in pixels.
+ *
+ * @typedef {(Point | [number, number])} PointLike
+ * @example
+ * var p1 = new Point(-77, 38); // a PointLike which is a Point
+ * var p2 = [-77, 38]; // a PointLike which is an array of two numbers
+ */
+export type PointLike = Point | [number, number];
 
 export type RequireAtLeastOne<T> = { [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>; }[keyof T];
 
@@ -36,7 +47,7 @@ export type RequireAtLeastOne<T> = { [K in keyof T]-?: Required<Pick<T, K>> & Pa
  * // set the map's initial perspective with CameraOptions
  * var map = new maplibregl.Map({
  *   container: 'map',
- *   style: 'mapbox://styles/mapbox/streets-v11',
+ *   style: 'https://demotiles.maplibre.org/style.json',
  *   center: [-73.5804, 45.53483],
  *   pitch: 60,
  *   bearing: -60,
@@ -48,8 +59,8 @@ export type RequireAtLeastOne<T> = { [K in keyof T]-?: Required<Pick<T, K>> & Pa
  * @see [Display buildings in 3D](https://maplibre.org/maplibre-gl-js-docs/example/3d-buildings/)
  */
 export type CameraOptions = CenterZoomBearing & {
-  pitch?: number;
-  around?: LngLatLike;
+    pitch?: number;
+    around?: LngLatLike;
 };
 
 export type CenterZoomBearing = {
@@ -103,17 +114,23 @@ export type FitBoundsOptions = FlyToOptions & {
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
  *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
+ * @property {boolean} freezeElevation Default false. Needed in 3D maps to let the camera stay in a constant
+ *   height based on sea-level. After the animation finished the zoom-level will be recalculated in respect of
+ *   the distance from the camera to the center-coordinate-altitude.
  */
 export type AnimationOptions = {
-  duration?: number;
-  easing?: (_: number) => number;
-  offset?: PointLike;
-  animate?: boolean;
-  essential?: boolean;
+    duration?: number;
+    easing?: (_: number) => number;
+    offset?: PointLike;
+    animate?: boolean;
+    essential?: boolean;
+    freezeElevation?: boolean;
 };
 
 abstract class Camera extends Evented {
     transform: Transform;
+    terrain: Terrain;
+
     _moving: boolean;
     _zooming: boolean;
     _rotating: boolean;
@@ -123,8 +140,8 @@ abstract class Camera extends Evented {
     _bearingSnap: number;
     _easeStart: number;
     _easeOptions: {
-      duration?: number;
-      easing?: (_: number) => number;
+        duration?: number;
+        easing?: (_: number) => number;
     };
     _easeId: string | void;
 
@@ -132,11 +149,21 @@ abstract class Camera extends Evented {
     _onEaseEnd: (easeId?: string) => void;
     _easeFrameId: TaskID;
 
+    // holds the geographical coordinate of the target
+    _elevationCenter: LngLat;
+    // holds the targ altitude value, = center elevation of the target.
+    // This value may changes during flight, because new terrain-tiles loads during flight.
+    _elevationTarget: number;
+    // holds the start altitude value, = center elevation before animation begins
+    // this value will recalculated during flight in respect of changing _elevationTarget values,
+    // so the linear interpolation between start and target keeps smooth and without jumps.
+    _elevationStart: number;
+
     abstract _requestRenderFrame(a: () => void): TaskID;
     abstract _cancelRenderFrame(_: TaskID): void;
 
     constructor(transform: Transform, options: {
-      bearingSnap: number;
+        bearingSnap: number;
     }) {
         super();
         this._moving = false;
@@ -159,7 +186,6 @@ abstract class Camera extends Evented {
      * var center = map.getCenter();
      * // access longitude and latitude values directly
      * var {lng, lat} = map.getCenter();
-     * @see Tutorial: [Use Mapbox GL JS in a React app](https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-react/#store-the-new-coordinates)
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
 
@@ -600,7 +626,7 @@ abstract class Camera extends Evented {
      * @memberof Map#
      * @param bounds Center these bounds in the viewport and use the highest
      *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {Object} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+     * @param {FitBoundsOptions} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
      * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
      * @param {boolean} [options.linear=false] If `true`, the map transitions using
      *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
@@ -612,7 +638,7 @@ abstract class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
-	 * @example
+     * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * map.fitBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
@@ -647,7 +673,7 @@ abstract class Camera extends Evented {
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
-	 * @example
+     * @example
      * var p0 = [220, 400];
      * var p1 = [500, 900];
      * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
@@ -767,6 +793,41 @@ abstract class Camera extends Evented {
     }
 
     /**
+     * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
+     * and returns them as Cameraoptions.
+     * @memberof Map#
+     * @param from The camera to look from
+     * @param altitudeFrom The altitude of the camera to look from
+     * @param to The center to look at
+     * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
+     * @returns {CameraOptions} the calculated camera options
+     */
+    calculateCameraOptionsFromTo(from: LngLat, altitudeFrom: number, to: LngLat, altitudeTo: number = 0) : CameraOptions {
+        const fromMerc = MercatorCoordinate.fromLngLat(from, altitudeFrom);
+        const toMerc = MercatorCoordinate.fromLngLat(to, altitudeTo);
+        const dx = toMerc.x - fromMerc.x;
+        const dy = toMerc.y - fromMerc.y;
+        const dz = toMerc.z - fromMerc.z;
+
+        const distance3D = Math.hypot(dx, dy, dz);
+        if (distance3D === 0) throw new Error('Can\'t calculate camera options with same From and To');
+
+        const groundDistance = Math.hypot(dx, dy);
+
+        const zoom = this.transform.scaleZoom(this.transform.cameraToCenterDistance / distance3D / this.transform.tileSize);
+        const bearing = (Math.atan2(dx, -dy) * 180) / Math.PI;
+        let pitch = (Math.acos(groundDistance / distance3D) * 180) / Math.PI;
+        pitch = dz < 0 ? 90 - pitch : 90 + pitch;
+
+        return {
+            center: toMerc.toLngLat(),
+            zoom,
+            pitch,
+            bearing
+        };
+    }
+
+    /**
      * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
      * between old and new values. The map will retain its current values for any
      * details not specified in `options`.
@@ -793,8 +854,8 @@ abstract class Camera extends Evented {
      * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
      */
     easeTo(options: EaseToOptions & {
-      easeId?: string;
-      noMoveStart?: boolean;
+        easeId?: string;
+        noMoveStart?: boolean;
     }, eventData?: any) {
         this._stop(false, options.easeId);
 
@@ -848,6 +909,7 @@ abstract class Camera extends Evented {
 
         this._easeId = options.easeId;
         this._prepareEase(eventData, options.noMoveStart, currently);
+        if (this.terrain) this._prepareElevation(center);
 
         this._ease((k) => {
             if (this._zooming) {
@@ -866,6 +928,8 @@ abstract class Camera extends Evented {
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
+            if (this.terrain && !options.freezeElevation) this._updateElevation(k);
+
             if (around) {
                 tr.setLocationAtPoint(around, aroundPoint);
             } else {
@@ -881,6 +945,7 @@ abstract class Camera extends Evented {
             this._fireMoveEvents(eventData);
 
         }, (interruptingEaseId?: string) => {
+            if (this.terrain) this._finalizeElevation();
             this._afterEase(eventData, interruptingEaseId);
         }, options as any);
 
@@ -889,7 +954,6 @@ abstract class Camera extends Evented {
 
     _prepareEase(eventData: any, noMoveStart: boolean, currently: any = {}) {
         this._moving = true;
-
         if (!noMoveStart && !currently.moving) {
             this.fire(new Event('movestart', eventData));
         }
@@ -902,6 +966,30 @@ abstract class Camera extends Evented {
         if (this._pitching && !currently.pitching) {
             this.fire(new Event('pitchstart', eventData));
         }
+    }
+
+    _prepareElevation(center: LngLat) {
+        this._elevationCenter = center;
+        this._elevationStart = this.transform.elevation;
+        this._elevationTarget = this.transform.getElevation(center, this.terrain);
+        this.transform.freezeElevation = true;
+    }
+
+    _updateElevation(k: number) {
+        const elevation = this.transform.getElevation(this._elevationCenter, this.terrain);
+        // target terrain updated during flight, slowly move camera to new height
+        if (k < 1 && elevation !== this._elevationTarget) {
+            const pitch1 = this._elevationTarget - this._elevationStart;
+            const pitch2 = (elevation - (pitch1 * k + this._elevationStart)) / (1 - k);
+            this._elevationStart += k * (pitch1 - pitch2);
+            this._elevationTarget = elevation;
+        }
+        this.transform.elevation = interpolate(this._elevationStart, this._elevationTarget, k);
+    }
+
+    _finalizeElevation() {
+        this.transform.freezeElevation = false;
+        this.transform.recalculateZoom(this.terrain);
     }
 
     _fireMoveEvents(eventData?: any) {
@@ -956,7 +1044,7 @@ abstract class Camera extends Evented {
      * unless 'options' includes `essential: true`.
      *
      * @memberof Map#
-     * @param {Object} options Options describing the destination and animation of the transition.
+     * @param {FlyToOptions} options Options describing the destination and animation of the transition.
      *     Accepts {@link CameraOptions}, {@link AnimationOptions},
      *     and the following additional options.
      * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
@@ -1133,6 +1221,7 @@ abstract class Camera extends Evented {
         this._padding = !tr.isPaddingEqual(padding as PaddingOptions);
 
         this._prepareEase(eventData, false);
+        if (this.terrain) this._prepareElevation(center);
 
         this._ease((k) => {
             // s: The distance traveled along the flight path, measured in ρ-screenfuls.
@@ -1153,12 +1242,17 @@ abstract class Camera extends Evented {
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
 
+            if (this.terrain && !options.freezeElevation) this._updateElevation(k);
+
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
 
             this._fireMoveEvents(eventData);
 
-        }, () => this._afterEase(eventData), options);
+        }, () => {
+            if (this.terrain) this._finalizeElevation();
+            this._afterEase(eventData);
+        }, options);
 
         return this;
     }
@@ -1200,12 +1294,12 @@ abstract class Camera extends Evented {
     }
 
     _ease(frame: (_: number) => void,
-          finish: () => void,
-          options: {
+        finish: () => void,
+        options: {
             animate?: boolean;
             duration?: number;
             easing?: (_: number) => number;
-          }) {
+        }) {
         if (options.animate === false || options.duration === 0) {
             frame(1);
             finish();
@@ -1247,7 +1341,7 @@ abstract class Camera extends Evented {
         const delta = center.lng - tr.center.lng;
         center.lng +=
             delta > 180 ? -360 :
-            delta < -180 ? 360 : 0;
+                delta < -180 ? 360 : 0;
     }
 }
 
@@ -1262,19 +1356,10 @@ function addAssertions(camera: Camera) { //eslint-disable-line
             inProgress[name] = false;
 
             camera.on(`${name}start`, () => {
-                assert(!inProgress[name], `"${name}start" fired twice without a "${name}end"`);
                 inProgress[name] = true;
-                assert(inProgress.move);
-            });
-
-            camera.on(name, () => {
-                assert(inProgress[name]);
-                assert(inProgress.move);
             });
 
             camera.on(`${name}end`, () => {
-                assert(inProgress.move);
-                assert(inProgress[name]);
                 inProgress[name] = false;
             });
         });

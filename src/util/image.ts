@@ -1,15 +1,13 @@
-import assert from 'assert';
-
 import {register} from './web_worker_transfer';
 
 export type Size = {
-  width: number;
-  height: number;
+    width: number;
+    height: number;
 };
 
 type Point2D = {
-  x: number;
-  y: number;
+    x: number;
+    y: number;
 };
 
 function createImage(image: any, {
@@ -21,7 +19,7 @@ function createImage(image: any, {
     } else if (data instanceof Uint8ClampedArray) {
         data = new Uint8Array(data.buffer);
     } else if (data.length !== width * height * channels) {
-        throw new RangeError('mismatched image size');
+        throw new RangeError(`mismatched image size. expected: ${data.length} but got: ${width * height * channels}`);
     }
     image.width = width;
     image.height = height;
@@ -71,7 +69,7 @@ function copyImage(srcImg: any, dstImg: any, srcPt: Point2D, dstPt: Point2D, siz
     const srcData = srcImg.data;
     const dstData = dstImg.data;
 
-    assert(srcData !== dstData);
+    if (srcData === dstData) throw new Error('srcData equals dstData, so image is already copied');
 
     for (let y = 0; y < size.height; y++) {
         const srcOffset = ((srcPt.y + y) * srcImg.width + srcPt.x) * channels;

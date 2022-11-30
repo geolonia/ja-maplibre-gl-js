@@ -1,7 +1,5 @@
 // Note: all "sizes" are measured in bytes
 
-import assert from 'assert';
-
 import type {Transferable} from '../types/transferable';
 
 const viewTypes = {
@@ -47,21 +45,21 @@ const DEFAULT_CAPACITY = 128;
 const RESIZE_MULTIPLIER = 5;
 
 export type StructArrayMember = {
-  name: string;
-  type: ViewType;
-  components: number;
-  offset: number;
+    name: string;
+    type: ViewType;
+    components: number;
+    offset: number;
 };
 
 export type StructArrayLayout = {
-  members: Array<StructArrayMember>;
-  size: number;
-  alignment: number;
+    members: Array<StructArrayMember>;
+    size: number;
+    alignment: number;
 };
 
 export type SerializedStructArray = {
-  length: number;
-  arrayBuffer: ArrayBuffer;
+    length: number;
+    arrayBuffer: ArrayBuffer;
 };
 
 /**
@@ -111,7 +109,6 @@ abstract class StructArray {
      * @private
      */
     static serialize(array: StructArray, transferables?: Array<Transferable>): SerializedStructArray {
-        assert(!array.isTransferred);
 
         array._trim();
 
@@ -160,7 +157,6 @@ abstract class StructArray {
      * @param {number} n The new size of the array.
      */
     resize(n: number) {
-        assert(!this.isTransferred);
         this.reserve(n);
         this.length = n;
     }
@@ -198,18 +194,17 @@ abstract class StructArray {
  * @private
  */
 function createLayout(
-  members: Array<{
-    name: string;
-    type: ViewType;
-    readonly components?: number;
-  }>,
-  alignment: number = 1
+    members: Array<{
+        name: string;
+        type: ViewType;
+        readonly components?: number;
+    }>,
+    alignment: number = 1
 ): StructArrayLayout {
 
     let offset = 0;
     let maxSize = 0;
     const layoutMembers = members.map((member) => {
-        assert(member.name.length);
         const typeSize = sizeOf(member.type);
         const memberOffset = offset = align(offset, Math.max(alignment, typeSize));
         const components = member.components || 1;

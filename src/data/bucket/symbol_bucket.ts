@@ -14,14 +14,14 @@ import {SymbolLayoutArray,
     SymbolInstanceArray,
     GlyphOffsetArray,
     SymbolLineVertexArray
-} from '../array_types';
+} from '../array_types.g';
 
-import Point from '../../util/point';
+import Point from '@mapbox/point-geometry';
 import SegmentVector from '../segment';
 import {ProgramConfigurationSet} from '../program_configuration';
 import {TriangleIndexArray, LineIndexArray} from '../index_array_type';
 import transformText from '../../symbol/transform_text';
-import mergeLines from '../../symbol/mergelines';
+import mergeLines from '../../symbol/merge_lines';
 import {allowsVerticalWritingMode, stringContainsRTLText} from '../../util/script_detection';
 import {WritingMode} from '../../symbol/shaping';
 import loadGeometry from '../load_geometry';
@@ -46,9 +46,9 @@ import type {
     IndexedFeature,
     PopulateParameters
 } from '../bucket';
-import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types';
+import type {CollisionBoxArray, CollisionBox, SymbolInstance} from '../array_types.g';
 import type {StructArray, StructArrayMember, ViewType} from '../../util/struct_array';
-import SymbolStyleLayer from '../../style/style_layer/symbol_style_layer';
+import SymbolStyleLayer, {getOverlapMode} from '../../style/style_layer/symbol_style_layer';
 import type Context from '../../gl/context';
 import type IndexBuffer from '../../gl/index_buffer';
 import type VertexBuffer from '../../gl/vertex_buffer';
@@ -59,41 +59,41 @@ import type {ImagePosition} from '../../render/image_atlas';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
 
 export type SingleCollisionBox = {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  anchorPointX: number;
-  anchorPointY: number;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    anchorPointX: number;
+    anchorPointY: number;
 };
 
 export type CollisionArrays = {
-  textBox?: SingleCollisionBox;
-  verticalTextBox?: SingleCollisionBox;
-  iconBox?: SingleCollisionBox;
-  verticalIconBox?: SingleCollisionBox;
-  textFeatureIndex?: number;
-  verticalTextFeatureIndex?: number;
-  iconFeatureIndex?: number;
-  verticalIconFeatureIndex?: number;
+    textBox?: SingleCollisionBox;
+    verticalTextBox?: SingleCollisionBox;
+    iconBox?: SingleCollisionBox;
+    verticalIconBox?: SingleCollisionBox;
+    textFeatureIndex?: number;
+    verticalTextFeatureIndex?: number;
+    iconFeatureIndex?: number;
+    verticalIconFeatureIndex?: number;
 };
 
 export type SymbolFeature = {
-  sortKey: number | void;
-  text: Formatted | void;
-  icon: ResolvedImage;
-  index: number;
-  sourceLayerIndex: number;
-  geometry: Array<Array<Point>>;
-  properties: any;
-  type: 'Point' | 'LineString' | 'Polygon';
-  id?: any;
+    sortKey: number | void;
+    text: Formatted | void;
+    icon: ResolvedImage;
+    index: number;
+    sourceLayerIndex: number;
+    geometry: Array<Array<Point>>;
+    properties: any;
+    type: 'Point' | 'LineString' | 'Polygon';
+    id?: any;
 };
 
 export type SortKeyRange = {
-  sortKey: number;
-  symbolInstanceStart: number;
-  symbolInstanceEnd: number;
+    sortKey: number;
+    symbolInstanceStart: number;
+    symbolInstanceEnd: number;
 };
 
 // Opacity arrays are frequently updated but don't contain a lot of information, so we pack them
@@ -175,6 +175,7 @@ export class SymbolBuffers {
 
     opacityVertexArray: SymbolOpacityArray;
     opacityVertexBuffer: VertexBuffer;
+    hasVisibleVertices: boolean;
 
     collisionVertexArray: CollisionVertexArray;
     collisionVertexBuffer: VertexBuffer;
@@ -188,6 +189,7 @@ export class SymbolBuffers {
         this.segments = new SegmentVector();
         this.dynamicLayoutVertexArray = new SymbolDynamicLayoutArray();
         this.opacityVertexArray = new SymbolOpacityArray();
+        this.hasVisibleVertices = false;
         this.placedSymbolArray = new PlacedSymbolArray();
     }
 
@@ -244,12 +246,12 @@ class CollisionBuffers {
     collisionVertexBuffer: VertexBuffer;
 
     constructor(LayoutArray: {
-      new (...args: any): StructArray;
+        new (...args: any): StructArray;
     },
-                layoutAttributes: Array<StructArrayMember>,
-                IndexArray: {
-                  new (...args: any): TriangleIndexArray | LineIndexArray;
-                }) {
+    layoutAttributes: Array<StructArrayMember>,
+    IndexArray: {
+        new (...args: any): TriangleIndexArray | LineIndexArray;
+    }) {
         this.layoutVertexArray = new LayoutArray();
         this.layoutAttributes = layoutAttributes;
         this.indexArray = new IndexArray();
@@ -388,8 +390,8 @@ class SymbolBucket implements Bucket {
         const sortKey = layout.get('symbol-sort-key');
         const zOrder = layout.get('symbol-z-order');
         this.canOverlap =
-            layout.get('text-allow-overlap') ||
-            layout.get('icon-allow-overlap') ||
+            getOverlapMode(layout, 'text-overlap', 'text-allow-overlap') !== 'never' ||
+            getOverlapMode(layout, 'icon-overlap', 'icon-allow-overlap') !== 'never' ||
             layout.get('text-ignore-placement') ||
             layout.get('icon-ignore-placement');
         this.sortFeaturesByKey = zOrder !== 'viewport-y' && !sortKey.isConstant();
@@ -524,7 +526,7 @@ class SymbolBucket implements Bucket {
 
             if (text) {
                 const fontStack = textFont.evaluate(evaluationFeature, {}, canonical).join(',');
-                const textAlongLine = layout.get('text-rotation-alignment') === 'map' && layout.get('symbol-placement') !== 'point';
+                const textAlongLine = layout.get('text-rotation-alignment') !== 'viewport' && layout.get('symbol-placement') !== 'point';
                 this.allowVerticalPlacement = this.writingModes && this.writingModes.indexOf(WritingMode.vertical) >= 0;
                 for (const section of text.sections) {
                     if (!section.image) {
@@ -624,17 +626,17 @@ class SymbolBucket implements Bucket {
     }
 
     addSymbols(arrays: SymbolBuffers,
-               quads: Array<SymbolQuad>,
-               sizeVertex: any,
-               lineOffset: [number, number],
-               alongLine: boolean,
-               feature: SymbolFeature,
-               writingMode: WritingMode,
-               labelAnchor: Anchor,
-               lineStartIndex: number,
-               lineLength: number,
-               associatedIconIndex: number,
-               canonical: CanonicalTileID) {
+        quads: Array<SymbolQuad>,
+        sizeVertex: any,
+        lineOffset: [number, number],
+        alongLine: boolean,
+        feature: SymbolFeature,
+        writingMode: WritingMode,
+        labelAnchor: Anchor,
+        lineStartIndex: number,
+        lineLength: number,
+        associatedIconIndex: number,
+        canonical: CanonicalTileID) {
         const indexArray = arrays.indexArray;
         const layoutVertexArray = arrays.layoutVertexArray;
 
@@ -766,15 +768,15 @@ class SymbolBucket implements Bucket {
     // These flat arrays are meant to be quicker to iterate over than the source
     // CollisionBoxArray
     _deserializeCollisionBoxesForSymbol(
-      collisionBoxArray: CollisionBoxArray,
-      textStartIndex: number,
-      textEndIndex: number,
-      verticalTextStartIndex: number,
-      verticalTextEndIndex: number,
-      iconStartIndex: number,
-      iconEndIndex: number,
-      verticalIconStartIndex: number,
-      verticalIconEndIndex: number
+        collisionBoxArray: CollisionBoxArray,
+        textStartIndex: number,
+        textEndIndex: number,
+        verticalTextStartIndex: number,
+        verticalTextEndIndex: number,
+        iconStartIndex: number,
+        iconEndIndex: number,
+        verticalIconStartIndex: number,
+        verticalIconEndIndex: number
     ): CollisionArrays {
 
         const collisionArrays = {} as CollisionArrays;

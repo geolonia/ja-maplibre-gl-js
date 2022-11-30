@@ -1,20 +1,19 @@
-/// <reference path="./types/glsl.d.ts" />
-/// <reference path="./types/non-typed-modules.d.ts" />
-import assert from 'assert';
 import {supported} from '@mapbox/mapbox-gl-supported';
-
+import packageJSON from '../package.json' assert {type: 'json'};
 import Map from './ui/map';
 import NavigationControl from './ui/control/navigation_control';
 import GeolocateControl from './ui/control/geolocate_control';
 import AttributionControl from './ui/control/attribution_control';
+import LogoControl from './ui/control/logo_control';
 import ScaleControl from './ui/control/scale_control';
 import FullscreenControl from './ui/control/fullscreen_control';
+import TerrainControl from './ui/control/terrain_control';
 import Popup from './ui/popup';
 import Marker from './ui/marker';
 import Style from './style/style';
 import LngLat from './geo/lng_lat';
 import LngLatBounds from './geo/lng_lat_bounds';
-import Point from './util/point';
+import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from './geo/mercator_coordinate';
 import {Evented} from './util/evented';
 import config from './util/config';
@@ -25,8 +24,18 @@ import WorkerPool from './util/worker_pool';
 import {prewarm, clearPrewarmedResources} from './util/global_worker_pool';
 import {clearTileCache} from './util/tile_request_cache';
 import {PerformanceUtils} from './util/performance';
+import {AJAXError} from './util/ajax';
 import type {RequestParameters, ResponseCallback} from './util/ajax';
 import type {Cancelable} from './types/cancelable';
+import GeoJSONSource from './source/geojson_source';
+import CanvasSource from './source/canvas_source';
+import ImageSource from './source/image_source';
+import RasterDEMTileSource from './source/raster_dem_tile_source';
+import RasterTileSource from './source/raster_tile_source';
+import VectorTileSource from './source/vector_tile_source';
+import VideoSource from './source/video_source';
+
+const version = packageJSON.version;
 
 const exported = {
     supported,
@@ -36,8 +45,10 @@ const exported = {
     NavigationControl,
     GeolocateControl,
     AttributionControl,
+    LogoControl,
     ScaleControl,
     FullscreenControl,
+    TerrainControl,
     Popup,
     Marker,
     Style,
@@ -46,7 +57,15 @@ const exported = {
     Point,
     MercatorCoordinate,
     Evented,
+    AJAXError,
     config,
+    CanvasSource,
+    GeoJSONSource,
+    ImageSource,
+    RasterDEMTileSource,
+    RasterTileSource,
+    VectorTileSource,
+    VideoSource,
     /**
      * Initializes resources like WebWorkers that can be shared across maps to lower load
      * times in some situations. `maplibregl.workerUrl` and `maplibregl.workerCount`, if being
@@ -80,6 +99,14 @@ const exported = {
      * maplibregl.clearPrewarmedResources()
      */
     clearPrewarmedResources,
+
+    /**
+     * Returns the package version of the library
+     * @returns {string} Package version of the library
+     */
+    get version(): string {
+        return version;
+    },
 
     /**
      * Gets and sets the number of web workers instantiated on a page with GL JS maps.
@@ -117,7 +144,7 @@ const exported = {
     },
 
     /**
-     * Clears browser storage used by this library. Using this method flushes the Mapbox tile
+     * Clears browser storage used by this library. Using this method flushes the MapLibre tile
      * cache that is managed by this library. Tiles may still be cached by the browser
      * in some cases.
      *
@@ -144,6 +171,8 @@ const exported = {
      * The example below will be triggered for custom:// urls defined in the sources list in the style definitions.
      * The function passed will receive the request parameters and should call the callback with the resulting request,
      * for example a pbf vector tile, non-compressed, represented as ArrayBuffer.
+     *
+     * @function addProtocol
      * @param {string} customProtocol - the protocol to hook, for example 'custom'
      * @param {Function} loadFn - the function to use when trying to fetch a tile specified by the customProtocol
      * @example
@@ -176,6 +205,8 @@ const exported = {
 
     /**
      * Removes a previusly added protocol
+     *
+     * @function removeProtocol
      * @param {string} customProtocol - the custom protocol to remove registration for
      * @example
      * maplibregl.removeProtocol('custom');
@@ -189,32 +220,25 @@ const exported = {
 Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPerformanceMetrics});
 
 /**
- * The version of Mapbox GL JS in use as specified in `package.json`,
- * `CHANGELOG.md`, and the GitHub release.
- *
- * @var {string} version
- */
-
-/**
- * Test whether the browser [supports Mapbox GL JS](https://www.mapbox.com/help/mapbox-browser-support/#mapbox-gl-js).
+ * Test whether the browser supports MapLibre GL JS.
  *
  * @function supported
  * @param {Object} [options]
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`,
- *   the function will return `false` if the performance of Mapbox GL JS would
+ *   the function will return `false` if the performance of MapLibre GL JS would
  *   be dramatically worse than expected (e.g. a software WebGL renderer would be used).
  * @return {boolean}
  * @example
- * // Show an alert if the browser does not support Mapbox GL
+ * // Show an alert if the browser does not support MapLibre GL
  * if (!maplibregl.supported()) {
- *   alert('Your browser does not support Mapbox GL');
+ *   alert('Your browser does not support MapLibre GL');
  * }
  * @see [Check for browser support](https://maplibre.org/maplibre-gl-js-docs/example/check-for-support/)
  */
 
 /**
  * Sets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text).
- * Necessary for supporting the Arabic and Hebrew languages, which are written right-to-left. Mapbox Studio loads this plugin by default.
+ * Necessary for supporting the Arabic and Hebrew languages, which are written right-to-left.
  *
  * @function setRTLTextPlugin
  * @param {string} pluginURL URL pointing to the Mapbox RTL text plugin source.
@@ -222,20 +246,19 @@ Debug.extend(exported, {isSafari, getPerformanceMetrics: PerformanceUtils.getPer
  * @param {boolean} lazy If set to `true`, mapboxgl will defer loading the plugin until rtl text is encountered,
  *    rtl text will then be rendered only after the plugin finishes loading.
  * @example
- * maplibregl.setRTLTextPlugin('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.0/mapbox-gl-rtl-text.js');
+ * maplibregl.setRTLTextPlugin('https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.js');
  * @see [Add support for right-to-left scripts](https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/)
  */
 
 /**
-  * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
-  * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
-  * If the status is `loaded` and the plugin is requested again, an error will be thrown.
-  *
-  * @function getRTLTextPluginStatus
-  * @example
-  * const pluginStatus = maplibregl.getRTLTextPluginStatus();
-  */
+ * Gets the map's [RTL text plugin](https://www.mapbox.com/mapbox-gl-js/plugins/#mapbox-gl-rtl-text) status.
+ * The status can be `unavailable` (i.e. not requested or removed), `loading`, `loaded` or `error`.
+ * If the status is `loaded` and the plugin is requested again, an error will be thrown.
+ *
+ * @function getRTLTextPluginStatus
+ * @example
+ * const pluginStatus = maplibregl.getRTLTextPluginStatus();
+ */
 
 export default exported;
-// canary assert: used to confirm that asserts have been removed from production build
-assert(true, 'canary assert');
+

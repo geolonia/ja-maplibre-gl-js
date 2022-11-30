@@ -1,6 +1,7 @@
-import type {CollisionBoxArray} from '../data/array_types';
-import Point from '../util/point';
+import type {CollisionBoxArray} from '../data/array_types.g';
+import Point from '@mapbox/point-geometry';
 import type Anchor from './anchor';
+import {SymbolPadding} from '../style/style_layer/symbol_style_layer';
 
 /**
  * A CollisionFeature represents the area of the tile covered by a single label.
@@ -27,15 +28,15 @@ class CollisionFeature {
      * @private
      */
     constructor(collisionBoxArray: CollisionBoxArray,
-                anchor: Anchor,
-                featureIndex: number,
-                sourceLayerIndex: number,
-                bucketIndex: number,
-                shaped: any,
-                boxScale: number,
-                padding: number,
-                alignLine: boolean,
-                rotate: number) {
+        anchor: Anchor,
+        featureIndex: number,
+        sourceLayerIndex: number,
+        bucketIndex: number,
+        shaped: any,
+        boxScale: number,
+        padding: SymbolPadding,
+        alignLine: boolean,
+        rotate: number) {
 
         this.boxStartIndex = collisionBoxArray.length;
 
@@ -59,10 +60,11 @@ class CollisionFeature {
                 this.circleDiameter = height;
             }
         } else {
-            let y1 = shaped.top * boxScale - padding;
-            let y2 = shaped.bottom * boxScale + padding;
-            let x1 = shaped.left * boxScale - padding;
-            let x2 = shaped.right * boxScale + padding;
+            // margin is in CSS order: [top, right, bottom, left]
+            let y1 = shaped.top * boxScale - padding[0];
+            let y2 = shaped.bottom * boxScale + padding[2];
+            let x1 = shaped.left * boxScale - padding[3];
+            let x2 = shaped.right * boxScale + padding[1];
 
             const collisionPadding = shaped.collisionPadding;
             if (collisionPadding) {

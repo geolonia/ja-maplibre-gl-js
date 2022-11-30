@@ -8,6 +8,7 @@ import ColorMode from '../gl/color_mode';
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
 import type {OverscaledTileID} from '../source/tile_id';
+import Style from '../style/style';
 
 export default drawDebug;
 
@@ -55,7 +56,7 @@ function drawDebugSSRect(painter: Painter, x: number, y: number, width: number, 
     const gl = context.gl;
 
     gl.enable(gl.SCISSOR_TEST);
-    gl.scissor(x * devicePixelRatio, y * devicePixelRatio, width * devicePixelRatio, height * devicePixelRatio);
+    gl.scissor(x * painter.pixelRatio, y * painter.pixelRatio, width * painter.pixelRatio, height * painter.pixelRatio);
     context.clear({color});
     gl.disable(gl.SCISSOR_TEST);
 }
@@ -66,7 +67,7 @@ function drawDebug(painter: Painter, sourceCache: SourceCache, coords: Array<Ove
     }
 }
 
-function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
+function drawDebugTile(painter: Painter, sourceCache: SourceCache, coord: OverscaledTileID) {
     const context = painter.context;
     const gl = context.gl;
 
@@ -77,14 +78,11 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     const stencilMode = StencilMode.disabled;
     const colorMode = painter.colorModeForRenderPass();
     const id = '$debug';
+    const terrainData = painter.style.map.terrain && painter.style.map.terrain.getTerrainData(coord);
 
     context.activeTexture.set(gl.TEXTURE0);
     // Bind the empty texture for drawing outlines
     painter.emptyTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
-
-    program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, Color.red), id,
-        painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 
     const tileRawData = sourceCache.getTileByID(coord.key).latestRawTileData;
     const tileByteLength = (tileRawData && tileRawData.byteLength) || 0;
@@ -95,12 +93,15 @@ function drawDebugTile(painter, sourceCache, coord: OverscaledTileID) {
     if (coord.overscaledZ !== coord.canonical.z) {
         tileIdText += ` => ${coord.overscaledZ}`;
     }
-    const tileLabel = `${tileIdText} ${tileSizeKb}kb`;
+    const tileLabel = `${tileIdText} ${tileSizeKb}kB`;
     drawTextToOverlay(painter, tileLabel);
 
     program.draw(context, gl.TRIANGLES, depthMode, stencilMode, ColorMode.alphaBlended, CullFaceMode.disabled,
-        debugUniformValues(posMatrix, Color.transparent, scaleRatio), id,
+        debugUniformValues(posMatrix, Color.transparent, scaleRatio), null, id,
         painter.debugBuffer, painter.quadTriangleIndexBuffer, painter.debugSegments);
+    program.draw(context, gl.LINE_STRIP, depthMode, stencilMode, colorMode, CullFaceMode.disabled,
+        debugUniformValues(posMatrix, Color.red), terrainData, id,
+        painter.debugBuffer, painter.tileBorderIndexBuffer, painter.debugSegments);
 }
 
 function drawTextToOverlay(painter: Painter, text: string) {
@@ -121,4 +122,31 @@ function drawTextToOverlay(painter: Painter, text: string) {
 
     painter.debugOverlayTexture.update(canvas);
     painter.debugOverlayTexture.bind(gl.LINEAR, gl.CLAMP_TO_EDGE);
+}
+
+export function selectDebugSource(style: Style, zoom: number): SourceCache | null {
+    // Use vector source with highest maxzoom
+    // Else use source with highest maxzoom of any type
+    let selectedSource: SourceCache = null;
+    const layers = Object.values(style._layers);
+    const sources = layers.flatMap((layer) => {
+        if (layer.source && !layer.isHidden(zoom)) {
+            const sourceCache = style.sourceCaches[layer.source];
+            return [sourceCache];
+        } else {
+            return [];
+        }
+    });
+    const vectorSources = sources.filter((source) => source.getSource().type === 'vector');
+    const otherSources = sources.filter((source) => source.getSource().type !== 'vector');
+    const considerSource = (source: SourceCache) => {
+        if (!selectedSource || (selectedSource.getSource().maxzoom < source.getSource().maxzoom)) {
+            selectedSource = source;
+        }
+    };
+    vectorSources.forEach((source) => considerSource(source));
+    if (!selectedSource) {
+        otherSources.forEach((source) => considerSource(source));
+    }
+    return selectedSource;
 }

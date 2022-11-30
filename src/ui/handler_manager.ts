@@ -17,8 +17,8 @@ import DragPanHandler from './handler/shim/drag_pan';
 import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/touch_zoom_rotate';
 import {bindAll, extend} from '../util/util';
-import Point from '../util/point';
-import assert from 'assert';
+import Point from '@mapbox/point-geometry';
+import LngLat from '../geo/lng_lat';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -36,49 +36,49 @@ class RenderFrameEvent extends Event {
 // For example, if there is a mousedown and mousemove, the mousePan handler
 // would return a `panDelta` on the mousemove.
 export interface Handler {
-  enable(): void;
-  disable(): void;
-  isEnabled(): boolean;
-  isActive(): boolean;
-  // `reset` can be called by the manager at any time and must reset everything to it's original state
-  reset(): void;
-  // Handlers can optionally implement these methods.
-  // They are called with dom events whenever those dom evens are received.
-  readonly touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-  readonly touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-  readonly touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-  readonly touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-  readonly mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
-  readonly mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
-  readonly mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
-  readonly dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
-  readonly wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
-  readonly keydown?: (e: KeyboardEvent) => HandlerResult | void;
-  readonly keyup?: (e: KeyboardEvent) => HandlerResult | void;
-  // `renderFrame` is the only non-dom event. It is called during render
-  // frames and can be used to smooth camera changes (see scroll handler).
-  readonly renderFrame?: () => HandlerResult | void;
+    enable(): void;
+    disable(): void;
+    isEnabled(): boolean;
+    isActive(): boolean;
+    // `reset` can be called by the manager at any time and must reset everything to it's original state
+    reset(): void;
+    // Handlers can optionally implement these methods.
+    // They are called with dom events whenever those dom evens are received.
+    readonly touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    readonly touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    readonly touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    readonly touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
+    readonly mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    readonly mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    readonly mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    readonly dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
+    readonly wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
+    readonly keydown?: (e: KeyboardEvent) => HandlerResult | void;
+    readonly keyup?: (e: KeyboardEvent) => HandlerResult | void;
+    // `renderFrame` is the only non-dom event. It is called during render
+    // frames and can be used to smooth camera changes (see scroll handler).
+    readonly renderFrame?: () => HandlerResult | void;
 }
 
 // All handler methods that are called with events can optionally return a `HandlerResult`.
 export type HandlerResult = {
-  panDelta?: Point;
-  zoomDelta?: number;
-  bearingDelta?: number;
-  pitchDelta?: number;
-  // the point to not move when changing the camera
-  around?: Point | null;
-  // same as above, except for pinch actions, which are given higher priority
-  pinchAround?: Point | null;
-  // A method that can fire a one-off easing by directly changing the map's camera.
-  cameraAnimation?: (map: Map) => any;
-  // The last three properties are needed by only one handler: scrollzoom.
-  // The DOM event to be used as the `originalEvent` on any camera change events.
-  originalEvent?: any;
-  // Makes the manager trigger a frame, allowing the handler to return multiple results over time (see scrollzoom).
-  needsRenderFrame?: boolean;
-  // The camera changes won't get recorded for inertial zooming.
-  noInertia?: boolean;
+    panDelta?: Point;
+    zoomDelta?: number;
+    bearingDelta?: number;
+    pitchDelta?: number;
+    // the point to not move when changing the camera
+    around?: Point | null;
+    // same as above, except for pinch actions, which are given higher priority
+    pinchAround?: Point | null;
+    // A method that can fire a one-off easing by directly changing the map's camera.
+    cameraAnimation?: (map: Map) => any;
+    // The last three properties are needed by only one handler: scrollzoom.
+    // The DOM event to be used as the `originalEvent` on any camera change events.
+    originalEvent?: any;
+    // Makes the manager trigger a frame, allowing the handler to return multiple results over time (see scrollzoom).
+    needsRenderFrame?: boolean;
+    // The camera changes won't get recorded for inertial zooming.
+    noInertia?: boolean;
 };
 
 function hasChange(result: HandlerResult) {
@@ -89,9 +89,9 @@ class HandlerManager {
     _map: Map;
     _el: HTMLElement;
     _handlers: Array<{
-      handlerName: string;
-      handler: Handler;
-      allowed: any;
+        handlerName: string;
+        handler: Handler;
+        allowed: any;
     }>;
     _eventsInProgress: any;
     _frameId: number;
@@ -100,10 +100,11 @@ class HandlerManager {
     _handlersById: {[x: string]: Handler};
     _updatingCamera: boolean;
     _changes: Array<[HandlerResult, any, any]>;
+    _drag: {center: Point; lngLat: LngLat; point: Point; handlerName: string};
     _previousActiveHandlers: {[x: string]: Handler};
     _listeners: Array<[Window | Document | HTMLElement, string, {
-      passive?: boolean;
-      capture?: boolean;
+        passive?: boolean;
+        capture?: boolean;
     } | undefined]>;
 
     constructor(map: Map, options: CompleteMapOptions) {
@@ -193,7 +194,7 @@ class HandlerManager {
         const tapDragZoom = new TapDragZoomHandler();
         this._add('tapDragZoom', tapDragZoom);
 
-        const touchPitch = map.touchPitch = new TouchPitchHandler();
+        const touchPitch = map.touchPitch = new TouchPitchHandler(map);
         this._add('touchPitch', touchPitch);
 
         const mouseRotate = new MouseRotateHandler(options);
@@ -203,7 +204,7 @@ class HandlerManager {
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
         const mousePan = new MousePanHandler(options);
-        const touchPan = new TouchPanHandler(options);
+        const touchPan = new TouchPanHandler(options, map);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this._add('mousePan', mousePan);
         this._add('touchPan', touchPan, ['touchZoom', 'touchRotate']);
@@ -297,7 +298,6 @@ class HandlerManager {
         }
 
         this._updatingCamera = true;
-        assert(e.timeStamp !== undefined);
 
         const inputEvent = e.type === 'renderFrame' ? undefined : (e as any as InputEvent);
 
@@ -411,11 +411,11 @@ class HandlerManager {
     }
 
     _updateMapTransform(combinedResult: any, combinedEventsInProgress: any, deactivatedHandlers: any) {
-
         const map = this._map;
         const tr = map.transform;
+        const terrain = map.terrain;
 
-        if (!hasChange(combinedResult)) {
+        if (!hasChange(combinedResult) && !(terrain && this._drag)) {
             return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
 
@@ -433,7 +433,36 @@ class HandlerManager {
         if (bearingDelta) tr.bearing += bearingDelta;
         if (pitchDelta) tr.pitch += pitchDelta;
         if (zoomDelta) tr.zoom += zoomDelta;
-        tr.setLocationAtPoint(loc, around);
+
+        if (!terrain) {
+            tr.setLocationAtPoint(loc, around);
+        } else {
+            // when 3d-terrain is enabled act a litte different:
+            //    - draging do not drag the picked point itself, instead it drags the map by pixel-delta.
+            //      With this approach it is no longer possible to pick a point from somewhere near
+            //      the horizon to the center in one move.
+            //      So this logic avoids the problem, that in such cases you easily loose orientation.
+            //    - scrollzoom does not zoom into the mouse-point, instead it zooms into map-center
+            //      this should be fixed in future-version
+            // when dragging starts, remember mousedown-location and panDelta from this point
+            if (combinedEventsInProgress.drag && !this._drag) {
+                this._drag = {
+                    center: tr.centerPoint,
+                    lngLat: tr.pointLocation(around),
+                    point: around,
+                    handlerName: combinedEventsInProgress.drag.handlerName
+                };
+                tr.freezeElevation = true;
+            // when dragging ends, recalcuate the zoomlevel for the new center coordinate
+            } else if (this._drag && deactivatedHandlers[this._drag.handlerName]) {
+                tr.freezeElevation = false;
+                tr.recalculateZoom(map.terrain);
+                this._drag = null;
+            // drag map
+            } else if (combinedEventsInProgress.drag && this._drag) {
+                tr.center = tr.pointLocation(tr.centerPoint.sub(panDelta));
+            }
+        }
 
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
@@ -501,6 +530,7 @@ class HandlerManager {
                 if (shouldSnapToNorth(inertialEase.bearing || this._map.getBearing())) {
                     inertialEase.bearing = 0;
                 }
+                inertialEase.freezeElevation = true;
                 this._map.easeTo(inertialEase, {originalEvent: originalEndEvent});
             } else {
                 this._map.fire(new Event('moveend', {originalEvent: originalEndEvent}));

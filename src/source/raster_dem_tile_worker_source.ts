@@ -1,6 +1,5 @@
 import DEMData from '../data/dem_data';
 import {RGBAImage} from '../util/image';
-
 import type Actor from '../util/actor';
 import type {
     WorkerDEMTileParameters,
@@ -34,7 +33,7 @@ class RasterDEMTileWorkerSource {
         if (!this.offscreenCanvas || !this.offscreenCanvasContext) {
             // Dem tiles are typically 256x256
             this.offscreenCanvas = new OffscreenCanvas(imgBitmap.width, imgBitmap.height);
-            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d');
+            this.offscreenCanvasContext = this.offscreenCanvas.getContext('2d', {willReadFrequently: true});
         }
 
         this.offscreenCanvas.width = imgBitmap.width;

@@ -3,7 +3,7 @@ import DOM from '../../util/dom';
 import {Event} from '../../util/evented';
 
 import type Map from '../map';
-import type Point from '../../util/point';
+import type Point from '@mapbox/point-geometry';
 
 /**
  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
@@ -24,7 +24,7 @@ class BoxZoomHandler {
      * @private
      */
     constructor(map: Map, options: {
-      clickTolerance: number;
+        clickTolerance: number;
     }) {
         this._map = map;
         this._el = map.getCanvasContainer();
@@ -94,8 +94,8 @@ class BoxZoomHandler {
         this._lastPos = pos;
 
         if (!this._box) {
-            this._box = DOM.create('div', 'maplibregl-boxzoom mapboxgl-boxzoom', this._container);
-            this._container.classList.add('maplibregl-crosshair', 'mapboxgl-crosshair');
+            this._box = DOM.create('div', 'maplibregl-boxzoom', this._container);
+            this._container.classList.add('maplibregl-crosshair');
             this._fireEvent('boxzoomstart', e);
         }
 
@@ -144,7 +144,7 @@ class BoxZoomHandler {
     reset() {
         this._active = false;
 
-        this._container.classList.remove('maplibregl-crosshair', 'mapboxgl-crosshair');
+        this._container.classList.remove('maplibregl-crosshair');
 
         if (this._box) {
             DOM.remove(this._box);

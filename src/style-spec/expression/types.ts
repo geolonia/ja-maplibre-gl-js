@@ -1,46 +1,49 @@
 export type NullTypeT = {
-  kind: 'null';
+    kind: 'null';
 };
 export type NumberTypeT = {
-  kind: 'number';
+    kind: 'number';
 };
 export type StringTypeT = {
-  kind: 'string';
+    kind: 'string';
 };
 export type BooleanTypeT = {
-  kind: 'boolean';
+    kind: 'boolean';
 };
 export type ColorTypeT = {
-  kind: 'color';
+    kind: 'color';
 };
 export type ObjectTypeT = {
-  kind: 'object';
+    kind: 'object';
 };
 export type ValueTypeT = {
-  kind: 'value';
+    kind: 'value';
 };
 export type ErrorTypeT = {
-  kind: 'error';
+    kind: 'error';
 };
 export type CollatorTypeT = {
-  kind: 'collator';
+    kind: 'collator';
 };
 export type FormattedTypeT = {
-  kind: 'formatted';
+    kind: 'formatted';
+};
+export type PaddingTypeT = {
+    kind: 'padding';
 };
 export type ResolvedImageTypeT = {
-  kind: 'resolvedImage';
+    kind: 'resolvedImage';
 };
 
 export type EvaluationKind = 'constant' | 'source' | 'camera' | 'composite';
 
 export type Type = NullTypeT | NumberTypeT | StringTypeT | BooleanTypeT | ColorTypeT | ObjectTypeT | ValueTypeT | // eslint-disable-line no-use-before-define
-ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | ResolvedImageTypeT;
+ArrayType | ErrorTypeT | CollatorTypeT | FormattedTypeT | PaddingTypeT | ResolvedImageTypeT;
 
 export type ArrayType = {
-  kind: 'array';
-  itemType: Type;
-  N: number;
+    kind: 'array';
+    itemType: Type;
+    N: number;
 };
 
 export type NativeType = 'number' | 'string' | 'boolean' | 'null' | 'array' | 'object';
@@ -55,6 +58,7 @@ export const ValueType = {kind: 'value'} as ValueTypeT;
 export const ErrorType = {kind: 'error'} as ErrorTypeT;
 export const CollatorType = {kind: 'collator'} as CollatorTypeT;
 export const FormattedType = {kind: 'formatted'} as FormattedTypeT;
+export const PaddingType = {kind: 'padding'} as PaddingTypeT;
 export const ResolvedImageType = {kind: 'resolvedImage'} as ResolvedImageTypeT;
 
 export function array(itemType: Type, N?: number | null): ArrayType {
@@ -85,6 +89,7 @@ const valueMemberTypes = [
     FormattedType,
     ObjectType,
     array(ValueType),
+    PaddingType,
     ResolvedImageType
 ];
 

@@ -44,13 +44,13 @@
     "no-invalid-this": "off",
     "no-buffer-constructor": "off",
 
-    "array-bracket-spacing": "off",
+    "array-bracket-spacing": "error",
     "consistent-return": "off",
     "global-require": "off",
     "import/no-commonjs": "error",
     // TSC throws an error on unresolved imports; eslint doesn't understand .js extension in import statement
     "import/no-unresolved": "off",
-    "key-spacing": "off",
+    "key-spacing": "error",
     "no-eq-null": "off",
     "no-lonely-if": "off",
     "no-new": "off",
@@ -72,28 +72,22 @@
     "space-before-function-paren": "off",
     "template-curly-spacing": "error",
     "no-useless-escape": "off",
-    "indent": ["error", 4, {
-      "flatTernaryExpressions": true,
-      "CallExpression": {
-        "arguments": "off"
-      },
-      "FunctionDeclaration": {
-        "parameters": "off"
-      },
-      "FunctionExpression": {
-        "parameters": "off"
-      }
-    }],
+    // @typescript-eslint/indent requires standard indent rule to be turned off
+    "indent": "off",
+    "@typescript-eslint/indent": ["error"],
     "no-multiple-empty-lines": [ "error", {
         "max": 1
     }],
+    "import/no-anonymous-default-export": ["error", {"allowLiteral": true} ],
     "jsdoc/check-param-names": "warn",
     "jsdoc/require-param": "warn",
     "jsdoc/require-param-description": "warn",
     "jsdoc/require-param-name": "warn",
     "jsdoc/require-returns": "warn",
     "jsdoc/require-returns-description": "warn",
-    
+    "jsdoc/check-alignment": "error",
+    "jsdoc/check-line-alignment": "error",
+
     // Jest https://www.npmjs.com/package/eslint-plugin-jest
     "jest/no-commented-out-tests": "error",
     "jest/no-disabled-tests": "warn",
@@ -115,7 +109,7 @@
   "ignorePatterns": ["build/*.js", "*.json"],
   "overrides": [
     {
-      "files": ["debug/**", "bench/**", "test/**", "src/style-spec/**"],
+      "files": ["test/**", "src/style-spec/**"],
       "rules": {
         "jsdoc/check-param-names": "off",
         "jsdoc/require-param": "off",

@@ -18,7 +18,7 @@ import type {Cancelable} from '../types/cancelable';
 import type {
     RasterSourceSpecification,
     RasterDEMSourceSpecification
-} from '../style-spec/types';
+} from '../style-spec/types.g';
 
 class RasterTileSource extends Evented implements Source {
     type: 'raster' | 'raster-dem';
@@ -104,8 +104,8 @@ class RasterTileSource extends Evented implements Source {
     }
 
     loadTile(tile: Tile, callback: Callback<void>) {
-        const url = tile.tileID.canonical.url(this.tiles, this.scheme);
-        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (err, img) => {
+        const url = tile.tileID.canonical.url(this.tiles, this.map.getPixelRatio(), this.scheme);
+        tile.request = getImage(this.map._requestManager.transformRequest(url, ResourceType.Tile), (err, img, expiry) => {
             delete tile.request;
 
             if (tile.aborted) {
@@ -115,9 +115,7 @@ class RasterTileSource extends Evented implements Source {
                 tile.state = 'errored';
                 callback(err);
             } else if (img) {
-                if (this.map._refreshExpiredTiles) tile.setExpiryData(img);
-                delete (img as any).cacheControl;
-                delete (img as any).expires;
+                if (this.map._refreshExpiredTiles) tile.setExpiryData(expiry);
 
                 const context = this.map.painter.context;
                 const gl = context.gl;

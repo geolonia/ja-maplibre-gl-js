@@ -3,19 +3,19 @@ import StyleLayer from '../style_layer';
 import FillExtrusionBucket from '../../data/bucket/fill_extrusion_bucket';
 import {polygonIntersectsPolygon, polygonIntersectsMultiPolygon} from '../../util/intersection_tests';
 import {translateDistance, translate} from '../query_utils';
-import properties, {FillExtrusionPaintPropsPossiblyEvaluated} from './fill_extrusion_style_layer_properties';
+import properties, {FillExtrusionPaintPropsPossiblyEvaluated} from './fill_extrusion_style_layer_properties.g';
 import {Transitionable, Transitioning, PossiblyEvaluated} from '../properties';
 import {mat4, vec4} from 'gl-matrix';
-import Point from '../../util/point';
+import Point from '@mapbox/point-geometry';
 import type {FeatureState} from '../../style-spec/expression';
 import type {BucketParameters} from '../../data/bucket';
-import type {FillExtrusionPaintProps} from './fill_extrusion_style_layer_properties';
+import type {FillExtrusionPaintProps} from './fill_extrusion_style_layer_properties.g';
 import type Transform from '../../geo/transform';
-import type {LayerSpecification} from '../../style-spec/types';
+import type {LayerSpecification} from '../../style-spec/types.g';
 import type {VectorTileFeature} from '@mapbox/vector-tile';
 
 export class Point3D extends Point {
-    z: number
+    z: number;
 }
 
 class FillExtrusionStyleLayer extends StyleLayer {
@@ -40,14 +40,14 @@ class FillExtrusionStyleLayer extends StyleLayer {
     }
 
     queryIntersectsFeature(
-      queryGeometry: Array<Point>,
-      feature: VectorTileFeature,
-      featureState: FeatureState,
-      geometry: Array<Array<Point>>,
-      zoom: number,
-      transform: Transform,
-      pixelsToTileUnits: number,
-      pixelPosMatrix: mat4
+        queryGeometry: Array<Point>,
+        feature: VectorTileFeature,
+        featureState: FeatureState,
+        geometry: Array<Array<Point>>,
+        zoom: number,
+        transform: Transform,
+        pixelsToTileUnits: number,
+        pixelPosMatrix: mat4
     ): boolean | number {
 
         const translatedPolygon = translate(queryGeometry,
@@ -217,7 +217,7 @@ function projectExtrusion(geometry: Array<Array<Point>>, zBase: number, zTop: nu
 function projectQueryGeometry(queryGeometry: Array<Point>, pixelPosMatrix: mat4, transform: Transform, z: number) {
     const projectedQueryGeometry = [];
     for (const p of queryGeometry) {
-        const v = vec4.fromValues(p.x, p.y, z, 1);
+        const v = [p.x, p.y, z, 1] as vec4;
         vec4.transformMat4(v, v, pixelPosMatrix);
         projectedQueryGeometry.push(new Point(v[0] / v[3], v[1] / v[3]));
     }

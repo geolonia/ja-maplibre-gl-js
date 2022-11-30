@@ -13,7 +13,7 @@ Install the Xcode Command Line Tools Package
 xcode-select --install
 ```
 
-Install [node.js](https://nodejs.org/) version ^14
+Install [node.js](https://nodejs.org/) version ^16
 ```bash
 brew install node
 ```
@@ -23,10 +23,22 @@ Clone the repository
 git clone git@github.com:maplibre/maplibre-gl-js.git
 ```
 
+Install dependencies for node_canvas (https://github.com/Automattic/node-canvas)
+```bash
+brew install pkg-config cairo pango libpng jpeg giflib librsvg
+```
+
 Install node module dependencies
 ```bash
 cd maplibre-gl-js &&
 npm install
+```
+
+**Apple silicon**
+If you have one of the newer arm64 machines, you might find that canvas.node or webgl.node can't be found for your architecture. In that case go to node_modules/canvas and node_modules/gl and run:
+
+```
+npm install --build-from-source
 ```
 
 ### Linux
@@ -37,14 +49,20 @@ sudo apt-get update &&
 sudo apt-get install build-essential git libglew-dev libxi-dev default-jre default-jdk
 ```
 
+If prebuilt binaries for canvas and gl aren’t available, you will also need:
+
+```bash
+sudo apt-get install python-is-python3 pkg-config libpixman-1-dev libcairo2-dev libpango1.0-dev libgif-dev
+```
+
 Install [nvm](https://github.com/nvm-sh/nvm)
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 ```
 
-Install [Node.js](https://nodejs.org/) ^14
+Install [Node.js](https://nodejs.org/) ^16
 ```
-nvm install 14
+nvm install 16
 ```
 
 Clone the repository
@@ -60,7 +78,9 @@ npm install
 
 ### Windows
 
-Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version ^14), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
+Consider using WSL and follow the above Linux guide or follow the next steps
+
+Install [git](https://git-scm.com/), [node.js](https://nodejs.org/) (version ^16), [npm and node-gyp](https://github.com/Microsoft/nodejs-guidelines/blob/master/windows-environment.md#compiling-native-addon-modules).
 
 Clone the repository
 ```bash
@@ -87,7 +107,7 @@ Start the debug server
 npm run start-debug
 ```
 
-Open the debug page at [http://localhost:9966/debug](http://localhost:9966/debug)
+Open the debug page at [http://localhost:9966/test/debug-pages](http://localhost:9966/test/debug-pages)
 
 ## Creating a Standalone Build
 
@@ -95,7 +115,7 @@ A standalone build allows you to turn the contents of this repository into `mapl
 
 To create a standalone build, run
 ```bash
-npm run build-prod-min
+npm run build-prod
 npm run build-css
 ```
 
@@ -107,13 +127,12 @@ See [`test/README.md`](./test/README.md).
 
 ## Writing & Running Benchmarks
 
-See [`bench/README.md`](./bench/README.md).
+See [`test/bench/README.md`](./test/bench/README.md).
 
 ## Code Conventions
 
 * We use [`error` events](https://www.mapbox.com/mapbox-gl-js/api/#Map.event:error) to report user errors.
-* We use [`assert`](https://nodejs.org/api/assert.html) to check invariants that are not likely to be caused by user error. These `assert` statements are stripped out of production builds.
-* We use the following ES6 features:
+* We use the latest feature that the TypeScript language has to offer including, but not limited to:
   * `let`/`const`
   * `for...of` loops (for arraylike iteration only, i.e. what is supported by [Bublé's `dangerousForOf` transform](https://buble.surge.sh/guide/#dangerous-transforms))
   * Arrow functions
@@ -124,10 +143,6 @@ See [`bench/README.md`](./bench/README.md).
   * Rest parameters
   * Destructuring
   * Modules
-* The following ES6 features are not to be used, in order to maintain support for IE 11 and older mobile browsers. This may change in the future.
-  * Spread (`...`) operator (because it requires Object.assign)
-  * Iterators and generators
-  * "Library" features such as `Map`, `Set`, `array.find`, etc.
 
 The conventions for module exports are:
 
@@ -136,8 +151,6 @@ The conventions for module exports are:
 * Anything else should be a named export.
 
 ### Version Control Conventions
-
-* We use [rebase merging](https://git-scm.com/book/en/v2/Git-Branching-Rebasing) (as opposed to [basic merging](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging)) to merge branches
 
 Here is a recommended way to get setup:
 1. Fork this project
@@ -164,22 +177,6 @@ How to add your changelog?
 - Any changelog entry should be descriptive and concise; it should explain the change to a reader without context
 - Any changelog entry should be added to the pull request in the following format: `<changelog>Changelog description</changelog>`
 - Any change that does not require a changelog should be labelled `skip changelog`
-
-### Github Issue Labels
-
-Our labeling system is
-
- - **minimalistic:** Labels' usefulness are inversely proportional to how many we have.
- - **objective:** Labels should be objective enough that any two people would agree on a labeling decision.
- - **useful:** Labels should track state or capture semantic meaning that would otherwise be hard to search.
-
-We have divided our labels into categories to make them easier to use.
-
- - type (blue)
- - actionable status (red)
- - non-actionable status (grey)
- - importance / urgency (green)
- - topic / project / misc (yellow)
 
 ## Recommended Reading
 

@@ -1,16 +1,15 @@
 import murmur3 from 'murmurhash-js';
 import {register} from '../util/web_worker_transfer';
-import assert from 'assert';
 
 type SerializedFeaturePositionMap = {
-  ids: Float64Array;
-  positions: Uint32Array;
+    ids: Float64Array;
+    positions: Uint32Array;
 };
 
 type FeaturePosition = {
-  index: number;
-  start: number;
-  end: number;
+    index: number;
+    start: number;
+    end: number;
 };
 
 // A transferable data structure that maps feature ids to their indices and buffer offsets
@@ -31,7 +30,7 @@ export default class FeaturePositionMap {
     }
 
     getPositions(id: unknown): Array<FeaturePosition> {
-        assert(this.indexed);
+        if (!this.indexed) throw new Error('Trying to get index, but feature positions are not indexed');
 
         const intId = getNumericId(id);
 

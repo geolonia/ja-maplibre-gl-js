@@ -16,12 +16,12 @@ import type ParsingContext from '../parsing_context';
 import type {Type} from '../types';
 
 type FormattedSectionExpression = {
-  // Content of a section may be Image expression or other
-  // type of expression that is coercable to 'string'.
-  content: Expression;
-  scale: Expression | null;
-  font: Expression | null;
-  textColor: Expression | null;
+    // Content of a section may be Image expression or other
+    // type of expression that is coercable to 'string'.
+    content: Expression;
+    scale: Expression | null;
+    font: Expression | null;
+    textColor: Expression | null;
 };
 
 export default class FormatExpression implements Expression {
@@ -97,11 +97,11 @@ export default class FormatExpression implements Expression {
             }
 
             return new FormattedSection(
-                    toString(evaluatedContent),
-                    null,
-                    section.scale ? section.scale.evaluate(ctx) : null,
-                    section.font ? section.font.evaluate(ctx).join(',') : null,
-                    section.textColor ? section.textColor.evaluate(ctx) : null
+                toString(evaluatedContent),
+                null,
+                section.scale ? section.scale.evaluate(ctx) : null,
+                section.font ? section.font.evaluate(ctx).join(',') : null,
+                section.textColor ? section.textColor.evaluate(ctx) : null
             );
         };
 
@@ -127,24 +127,5 @@ export default class FormatExpression implements Expression {
         // Technically the combinatoric set of all children
         // Usually, this.text will be undefined anyway
         return false;
-    }
-
-    serialize() {
-        const serialized = ['format'] as (string | {})[];
-        for (const section of this.sections) {
-            serialized.push(section.content.serialize());
-            const options = {};
-            if (section.scale) {
-                options['font-scale'] = section.scale.serialize();
-            }
-            if (section.font) {
-                options['text-font'] = section.font.serialize();
-            }
-            if (section.textColor) {
-                options['text-color'] = section.textColor.serialize();
-            }
-            serialized.push(options);
-        }
-        return serialized;
     }
 }

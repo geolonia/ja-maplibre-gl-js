@@ -7,8 +7,13 @@ import type {RequestManager} from '../util/request_manager';
 import type {Callback} from '../types/callback';
 import type {TileJSON} from '../types/tilejson';
 import type {Cancelable} from '../types/cancelable';
+import type {RasterDEMSourceSpecification, RasterSourceSpecification, VectorSourceSpecification} from '../style-spec/types.g';
 
-export default function(options: any, requestManager: RequestManager, callback: Callback<TileJSON>): Cancelable {
+export default function loadTileJson(
+    options: RasterSourceSpecification | RasterDEMSourceSpecification | VectorSourceSpecification,
+    requestManager: RequestManager,
+    callback: Callback<TileJSON>
+): Cancelable {
     const loaded = function(err: Error, tileJSON: any) {
         if (err) {
             return callback(err);
@@ -16,7 +21,7 @@ export default function(options: any, requestManager: RequestManager, callback: 
             const result: any = pick(
                 // explicit source options take precedence over TileJSON
                 extend(tileJSON, options),
-                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'maplibreLogo', 'bounds', 'scheme', 'tileSize', 'encoding']
+                ['tiles', 'minzoom', 'maxzoom', 'attribution', 'bounds', 'scheme', 'tileSize', 'encoding']
             );
 
             if (tileJSON.vector_layers) {

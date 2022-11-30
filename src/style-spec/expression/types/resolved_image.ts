@@ -1,6 +1,6 @@
 export type ResolvedImageOptions = {
-  name: string;
-  available: boolean;
+    name: string;
+    available: boolean;
 };
 
 export default class ResolvedImage {
@@ -19,9 +19,5 @@ export default class ResolvedImage {
     static fromString(name: string): ResolvedImage | null {
         if (!name) return null; // treat empty values as no image
         return new ResolvedImage({name, available: false});
-    }
-
-    serialize(): Array<string> {
-        return ['image', this.name];
     }
 }
