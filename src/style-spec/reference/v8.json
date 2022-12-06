@@ -7,12 +7,14 @@
       "values": [
         8
       ],
-      "doc": "Style specification version number. Must be 8.",
+      "doc": "スタイル仕様のバージョン番号。8でなければならない。",
+      "_doc": "Style specification version number. Must be 8.",
       "example": 8
     },
     "name": {
       "type": "string",
-      "doc": "A human-readable name for the style.",
+      "doc": "人間にとって読みやすいスタイルの名前。",
+      "_doc": "A human-readable name for the style.",
       "example": "Bright"
     },
     "metadata": {
