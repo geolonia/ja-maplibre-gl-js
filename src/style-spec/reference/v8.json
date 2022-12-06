@@ -8,13 +8,11 @@
         8
       ],
       "doc": "Style specification version number. Must be 8.",
-      "doc:ja": "スタイル仕様のバージョン番号。8でなければならない。",
       "example": 8
     },
     "name": {
       "type": "string",
-      "doc": "A human-readable name for the style.",
-      "doc:ja": "人間にとって読みやすいスタイルの名前",
+      "doc": "あああ",
       "example": "Bright"
     },
     "metadata": {
