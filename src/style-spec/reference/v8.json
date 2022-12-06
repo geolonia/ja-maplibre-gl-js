@@ -7,7 +7,7 @@
       "values": [
         8
       ],
-      "doc": "Style specification version number. Must be 8.",
+      "doc": "Style specification version number. Must be 9.",
       "example": 8
     },
     "name": {
