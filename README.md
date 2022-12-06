@@ -40,3 +40,20 @@ https://geolonia.github.io/ja-maplibre-gl-js-docs/plugins/
   "description": "視覚障がい者向けARIA対応スクリーンリーダーとの連携。"
 },
 ```
+
+### スタイル仕様
+https://geolonia.github.io/ja-maplibre-gl-js-docs/style-spec/
+
+#### 手順
+
+1. v8.json (https://github.com/geolonia/ja-maplibre-gl-js/blob/main/src/style-spec/reference/v8.json) を編集して下さい。
+2. 翻訳する行はコピーして翻訳し、原文は、`_doc` の様にアンダーバーを付けて残しておいて下さい。
+
+```
+"name": {
+  "type": "string",
+  "_doc": "A human-readable name for the style.",
+  "doc": "人間にとって読みやすいスタイルの名前",
+  ...
+},
+```
