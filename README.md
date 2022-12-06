@@ -46,7 +46,7 @@ https://geolonia.github.io/ja-maplibre-gl-js-docs/style-spec/
 
 #### 手順
 
-1. v8.json (https://github.com/geolonia/ja-maplibre-gl-js/blob/main/src/style-spec/reference/v8.json) を編集して下さい。
+1. `v8.json` (https://github.com/geolonia/ja-maplibre-gl-js/blob/main/src/style-spec/reference/v8.json) を編集して下さい。
 2. 翻訳する行はコピーして翻訳し、原文は、`_doc` の様にアンダーバーを付けて残しておいて下さい。
 
 ```
