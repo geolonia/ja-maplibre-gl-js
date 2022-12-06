@@ -7,12 +7,12 @@
       "values": [
         8
       ],
-      "doc": "Style specification version number. Must be 9.",
+      "doc": "Style specification version number. Must be 8.",
       "example": 8
     },
     "name": {
       "type": "string",
-      "doc": "human-readable name for the style.",
+      "doc": "あああああああああ",
       "example": "Bright"
     },
     "metadata": {
