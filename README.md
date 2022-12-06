@@ -199,14 +199,11 @@ https://geolonia.github.io/ja-maplibre-gl-js-docs/api/
 #### 手順
 
 1. 翻訳ファイルは、`src/` 以下にありますので、エディタで翻訳する文章を検索して下さい。  
-2. 以下の様に英文を `//` でコメントアウトし、下に日本語を書きます。
+2. 以下の様に英文を `//` でコメントアウトし、下に日本語を書きます。（`/** ... */` にコメントアウトすると、表示されてしまうので、上部に原文をまとめています）
 
 ```
  // * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
- 
- /**
  * @param {number} [options.maxZoom=22] 地図の最大表示倍率（0〜24）。
- */
 ```
 
 
