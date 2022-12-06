@@ -31,7 +31,7 @@ https://geolonia.github.io/ja-maplibre-gl-js-docs/plugins/
 #### 手順
 
 1. [ja-maplibre-gl-js-docsの pluguins.json](https://github.com/geolonia/ja-maplibre-gl-js-docs/blob/main/docs/data/plugins.json) を編集して下さい。（https://github.com/geolonia/ja-maplibre-gl-js-docs/blob/main/docs/data/plugins.json）
-2. 以下の様に`description` 行をコピーし日本語に翻訳して下さい。英語の説明は、英文の列のキーを `_description` に変更して残していておいて下さい。
+2. 翻訳する行はコピーして翻訳し、原文は、`_description` の様にアンダーバーを付けて残しておいて下さい。
 
 ```
 "mapbox-gl-accessibility": {
