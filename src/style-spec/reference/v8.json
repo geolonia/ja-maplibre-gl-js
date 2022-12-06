@@ -12,7 +12,7 @@
     },
     "name": {
       "type": "string",
-      "doc": "あああああああああA human-readable name for the style.",
+      "doc": "human-readable name for the style.",
       "example": "Bright"
     },
     "metadata": {
