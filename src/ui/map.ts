@@ -179,6 +179,24 @@ const defaultOptions = {
     crossSourceCollisions: true
 } as CompleteMapOptions;
 
+//  * The `Map` object represents the map on your page. It exposes methods
+//  *  and properties that enable you to programmatically change the map,
+//  *  and fires events as users interact with it.
+//  *
+//  *  You create a `Map` by specifying a `container` and other options.
+//  *  Then MapLibre GL JS initializes the map on the page and returns your `Map`
+//  *  object.
+//  *
+//  *  @extends Evented
+//  *  @param {Object} options
+//  *  @param {HTMLElement|string} options.container The HTML element in which MapLibre GL JS will render the map, or the element's string `id`. The specified element must have no children.
+//  *  @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+//  *  @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
+//  *  @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+//  *  @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+//  *  @param {Object|string} [options.style] The map's MapLibre style. This must be an a JSON object conforming to
+//  *  the schema described in the [MapLibre Style Specification](https:*maplibre.org/maplibre-gl-js-docs/style-spec/), or a URL to
+//  *  such JSON.
 /**
  * `Map` オブジェクトは、ページ上の地図を表します。プログラムによって地図を操作するための
  * メソッドとプロパティが用意され、ユーザーが地図を操作したときにはイベントが発生します。
@@ -195,34 +213,19 @@ const defaultOptions = {
  * @param {number} [options.maxPitch=60] 地図の最大ピッチ（0〜60）。
  * @param {Object|string} [options.style] 地図の Mapbox スタイル。[Mapbox Style Specification](https://mapbox.com/mapbox-gl-style-spec/)
  * に記されたスキーマに準拠した JSON オブジェクトか、そのような JSON への URL である必要があります。
-//  The `Map` object represents the map on your page. It exposes methods
-//  and properties that enable you to programmatically change the map,
-//  and fires events as users interact with it.
-//  
-//  You create a `Map` by specifying a `container` and other options.
-//  Then MapLibre GL JS initializes the map on the page and returns your `Map`
-//  object.
-//  
-//  @extends Evented
-//  @param {Object} options
-//  @param {HTMLElement|string} options.container The HTML element in which MapLibre GL JS will render the map, or the element's string `id`. The specified element must have no children.
-//  @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
-//  @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
-//  @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
-//  @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
-//  @param {Object|string} [options.style] The map's MapLibre style. This must be an a JSON object conforming to
-//  the schema described in the [MapLibre Style Specification](https:*maplibre.org/maplibre-gl-js-docs/style-spec/), or a URL to
-//  such JSON.
+ */
+//  *  @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
+//  *    For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
+//  *    An additional string may optionally be provided to indicate a parameter-styled hash,
+//  *    e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
+//  *    is a custom parameter and bar is an arbitrary hash distinct from the map hash.
+/**
  * @param {(boolean|string)} [options.hash=false] `true` の場合、地図の座標（ズーム、中心緯度、中心経度、方位、ピッチ）の情報は、そのページの URL のハッシュと連動するようになります。
  *   例えば、`http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  *   また，オプションでパラメータ形式のハッシュを示す文字列を追加することもできます。
  *   例: http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, ここで、fooは
  *   カスタムパラメータで、barは地図の座標を示すハッシュとは異なる任意のハッシュです。
-//  @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
-//    For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
-//    An additional string may optionally be provided to indicate a parameter-styled hash,
-//    e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
-//    is a custom parameter and bar is an arbitrary hash distinct from the map hash.
+ *
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
