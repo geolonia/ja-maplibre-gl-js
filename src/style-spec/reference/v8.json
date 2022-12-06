@@ -12,7 +12,8 @@
     },
     "name": {
       "type": "string",
-      "doc": "A human-readable name for the style.",
+      "_doc": "A human-readable name for the style.",
+      "doc": "人間にとって読みやすいスタイルの名前",
       "example": "Bright"
     },
     "metadata": {
