@@ -222,19 +222,11 @@ const defaultOptions = {
  * に記されたスキーマに準拠した JSON オブジェクトか、そのような JSON への URL である必要があります。
  *
  *
-<<<<<<< HEAD
  * @param {(boolean|string)} [options.hash=false] `true` の場合、地図の座標（ズーム、中心緯度、中心経度、方位、ピッチ）の情報は、そのページの URL のハッシュと連動するようになります。
  *   例えば、`http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
  *   また，オプションでパラメータ形式のハッシュを示す文字列を追加することもできます。
  *   例: http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, ここで、fooは
  *   カスタムパラメータで、barは地図の座標を示すハッシュとは異なる任意のハッシュです。
-=======
- * @param {(boolean|string)} [options.hash=false] あああああああああああああああああああああああああああああああIf `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
- *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
- *   An additional string may optionally be provided to indicate a parameter-styled hash,
- *   e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
- *   is a custom parameter and bar is an arbitrary hash distinct from the map hash.
->>>>>>> upstream2/main
  * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
  * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
  *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
