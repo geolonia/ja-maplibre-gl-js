@@ -7,19 +7,19 @@
       "values": [
         8
       ],
-      "doc": "スタイル仕様のバージョン番号。8でなければならない。",
       "_doc": "Style specification version number. Must be 8.",
+      "doc": "スタイル仕様のバージョン番号。8でなければならない。",
       "example": 8
     },
     "name": {
       "type": "string",
-      "doc": "人間にとって読みやすいスタイルの名前。",
       "_doc": "A human-readable name for the style.",
+      "doc": "人間にとって読みやすいスタイルの名前。",
       "example": "Bright"
     },
     "metadata": {
       "type": "*",
-      "doc": "Arbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
+      "doc": "ああああああArbitrary properties useful to track with the stylesheet, but do not influence rendering. Properties should be prefixed to avoid collisions, like 'mapbox:'."
     },
     "center": {
       "type": "array",
