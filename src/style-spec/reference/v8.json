@@ -2785,7 +2785,8 @@
         }
       },
       "match": {
-        "doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n - a single literal value; or\n - an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
+        "_doc": "Selects the output whose label value matches the input value, or the fallback value if no match is found. The input can be any expression (e.g. `[\"get\", \"building_type\"]`). Each label must be either:\n - a single literal value; or\n - an array of literal values, whose values must be all strings or all numbers (e.g. `[100, 101]` or `[\"c\", \"b\"]`). The input matches if any of the values in the array matches, similar to the `\"in\"` operator.\nEach label must be unique. If the input type does not match the type of the labels, the result will be the fallback value.",
+        "doc": "アウトプットのラベルと入力が一致する場合、そのアウトプットの値を返します。一致しない場合はフォールバックの値を返します。入力はエクスプレッションを（例： `[\"get\", \"building_type\"]` ）使用できます。アウトプットのラベルは \n - 単一のリテラル値; または\n - リテラル値の配列, 配列の値はすべて文字列か数字でなければなりません。 (例： `[100, 101]` や `[\"c\", \"b\"]`など)`\"in\"`演算子のように、配列内のいずれかの値と入力が一致した場合にマッチします。各ラベルはユニークである必要があります。入力の型がラベルの型と一致しない場合、フォールバック値を返します。",
         "group": "Decision",
         "sdk-support": {
           "basic functionality": {
