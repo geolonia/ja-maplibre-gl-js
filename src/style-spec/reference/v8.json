@@ -2743,7 +2743,8 @@
         }
       },
       "in": {
-        "doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "_doc": "Determines whether an item exists in an array or a substring exists in a string.",
+        "doc": "アイテム(`keyword`)が配列に存在するか、または文字列の一部にマッチするかを判定します。",
         "group": "Lookup",
         "sdk-support": {
           "basic functionality": {
