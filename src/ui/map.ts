@@ -1602,19 +1602,49 @@ class Map extends Camera {
         return this.style.loaded();
     }
 
+    // /**
+    //  * Adds a source to the map's style.
+    //  *
+    //  * @param {string} id The ID of the source to add. Must not conflict with existing sources.
+    //  * @param {Object} source The source object, conforming to the
+    //  * MapLibre Style Specification's [source definition](https://maplibre.org/maplibre-gl-js-docs/style-spec/#sources) or
+    //  * {@link CanvasSourceOptions}.
+    //  * @fires source.add
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * map.addSource('my-data', {
+    //  *   type: 'vector',
+    //  *   url: 'https://demotiles.maplibre.org/tiles/tiles.json'
+    //  * });
+    //  * @example
+    //  * map.addSource('my-data', {
+    //  *   "type": "geojson",
+    //  *   "data": {
+    //  *     "type": "Feature",
+    //  *     "geometry": {
+    //  *       "type": "Point",
+    //  *       "coordinates": [-77.0323, 38.9131]
+    //  *     },
+    //  *     "properties": {
+    //  *       "title": "Mapbox DC",
+    //  *       "marker-symbol": "monument"
+    //  *     }
+    //  *   }
+    //  * });
+    //  * @see GeoJSON source: [Add live realtime data](https://maplibre.org/maplibre-gl-js-docs/example/live-geojson/)
+    //  */
     /**
-     * Adds a source to the map's style.
+     * 地図のスタイルにソースを追加します。
      *
-     * @param {string} id The ID of the source to add. Must not conflict with existing sources.
-     * @param {Object} source The source object, conforming to the
-     * MapLibre Style Specification's [source definition](https://maplibre.org/maplibre-gl-js-docs/style-spec/#sources) or
-     * {@link CanvasSourceOptions}.
+     * @param {string} id 追加するソースのID。既に追加したソースと重複してはいけません。
+     * @param {Object} source MapLibre Style Specificationの [ソース定義](/style-spec/#sources)に準拠したソースオブジェクト、または
+     * {@link CanvasSourceOptions}。
      * @fires source.add
      * @returns {Map} `this`
      * @example
      * map.addSource('my-data', {
      *   type: 'vector',
-     *   url: 'https://demotiles.maplibre.org/tiles/tiles.json'
+     *   url: 'https://tileserver.geolonia.com/embed-simple-vector-sample/tiles.json'
      * });
      * @example
      * map.addSource('my-data', {
@@ -1631,7 +1661,7 @@ class Map extends Camera {
      *     }
      *   }
      * });
-     * @see GeoJSON source: [Add live realtime data](https://maplibre.org/maplibre-gl-js-docs/example/live-geojson/)
+     * @see GeoJSON ソース: [ライブリアルタイムデータを追加](https://maplibre.org/maplibre-gl-js-docs/example/live-geojson/)
      */
     addSource(id: string, source: SourceSpecification) {
         this._lazyInitEmptyStyle();
