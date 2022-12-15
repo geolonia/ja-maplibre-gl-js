@@ -214,6 +214,69 @@ const defaultOptions = {
 // * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the MapLibre wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
 // * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of MapLibre
 // *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
+// * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
+// * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
+// * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
+// * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
+// * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
+// * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
+// * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
+// * @param {boolean|Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
+// * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
+// * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
+// * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TwoFingersTouchZoomRotateHandler#enable}.
+// * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TwoFingersTouchPitchHandler#enable}.
+// * @param {boolean|GestureOptions} [options.cooperativeGestures=undefined] If `true` or set to an options object, map is only accessible on desktop while holding Command/Ctrl and only accessible on mobile with two fingers. Interacting with the map using normal gestures will trigger an informational screen. With this option enabled, "drag to pitch" requires a three-finger gesture.
+// * A valid options object includes the following properties to customize the text on the informational screen. The values below are the defaults.
+// * {
+// *   windowsHelpText: "Use Ctrl + scroll to zoom the map",
+// *   macHelpText: "Use ⌘ + scroll to zoom the map",
+// *   mobileHelpText: "Use two fingers to move the map",
+// * }
+// * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
+// * @param {LngLatLike} [options.center=[0, 0]] The initial geographical centerpoint of the map. If `center` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: MapLibre GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
+// * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
+// * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
+// * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`. Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+// * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
+// * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
+// * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
+// * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
+// * container, there will be blank space beyond 180 and -180 degrees longitude.
+// * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
+// * map and the other on the left edge of the map) at every zoom level.
+// * @param {number} [options.maxTileCacheSize=null] The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
+// * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
+// *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
+// *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
+// *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
+// *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (See [Use locally generated ideographs](https://maplibre.org/maplibre-gl-js-docs/example/local-ideographs).)
+// * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
+// *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
+// * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
+// * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
+// * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
+// * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
+// * @param {number} [options.pixelRatio] The pixel ratio. The canvas' `width` attribute will be `container.clientWidth * pixelRatio` and its `height` attribute will be `container.clientHeight * pixelRatio`. Defaults to `devicePixelRatio` if not specified.
+// * @example
+// * var map = new maplibregl.Map({
+// *   container: 'map',
+// *   center: [-122.420679, 37.772537],
+// *   zoom: 13,
+// *   style: style_object,
+// *   hash: true,
+// *   transformRequest: (url, resourceType)=> {
+// *     if(resourceType === 'Source' && url.startsWith('http://myHost')) {
+// *       return {
+// *        url: url.replace('http', 'https'),
+// *        headers: { 'my-custom-header': true},
+// *        credentials: 'include'  // Include cookies for cross-origin requests
+// *      }
+// *     }
+// *   }
+// * });
+// * @see [Display a map](https://maplibre.org/maplibre-gl-js-docs/example/simple-map/)
+// */
 
 /**
  * `Map` オブジェクトは、ページ上の地図を表します。プログラムによって地図を操作するための
@@ -249,43 +312,39 @@ const defaultOptions = {
  * @param {boolean} [options.maplibreLogo=false] もし `true` ならば、MapLibre のロゴが表示されます。
  * @param {string} [options.logoPosition='bottom-left'] 地図上の MapLibre マーク位置を指定する文字列。有効なオプションは `top-left`,`top-right`, `bottom-left`, `bottom-right` です。
  * @param {boolean} [options.failIfMajorPerformanceCaveat=false] もし `true` ならば、MapLibre GL JS のパフォーマンスが予想より劇的に悪くなる場合（つまり、ソフトウェアレンダラーが使われる場合）、地図の作成は失敗することになります。
- * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
- * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
- * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
- * @param {LngLatBoundsLike} [options.maxBounds] If set, the map will be constrained to the given bounds.
- * @param {boolean|Object} [options.scrollZoom=true] If `true`, the "scroll to zoom" interaction is enabled. An `Object` value is passed as options to {@link ScrollZoomHandler#enable}.
- * @param {boolean} [options.boxZoom=true] If `true`, the "box zoom" interaction is enabled (see {@link BoxZoomHandler}).
- * @param {boolean} [options.dragRotate=true] If `true`, the "drag to rotate" interaction is enabled (see {@link DragRotateHandler}).
- * @param {boolean|Object} [options.dragPan=true] If `true`, the "drag to pan" interaction is enabled. An `Object` value is passed as options to {@link DragPanHandler#enable}.
- * @param {boolean} [options.keyboard=true] If `true`, keyboard shortcuts are enabled (see {@link KeyboardHandler}).
- * @param {boolean} [options.doubleClickZoom=true] If `true`, the "double click to zoom" interaction is enabled (see {@link DoubleClickZoomHandler}).
- * @param {boolean|Object} [options.touchZoomRotate=true] If `true`, the "pinch to rotate and zoom" interaction is enabled. An `Object` value is passed as options to {@link TwoFingersTouchZoomRotateHandler#enable}.
- * @param {boolean|Object} [options.touchPitch=true] If `true`, the "drag to pitch" interaction is enabled. An `Object` value is passed as options to {@link TwoFingersTouchPitchHandler#enable}.
- * @param {boolean|GestureOptions} [options.cooperativeGestures=undefined] If `true` or set to an options object, map is only accessible on desktop while holding Command/Ctrl and only accessible on mobile with two fingers. Interacting with the map using normal gestures will trigger an informational screen. With this option enabled, "drag to pitch" requires a three-finger gesture.
- * A valid options object includes the following properties to customize the text on the informational screen. The values below are the defaults.
+ * @param {boolean} [options.preserveDrawingBuffer=false] `true` の場合、`map.getCanvas().toDataURL()` を用いてマップのキャンバスを PNG にエクスポートすることができます。これはパフォーマンスの最適化のため、デフォルトでは `false` になっています。
+ * @param {boolean} [options.antialias] もし `true` なら、MSAAアンチエイリアスでglコンテキストが作成され、カスタムレイヤーのアンチエイリアスに役立ちます。
+ * @param {boolean} [options.refreshExpiredTiles=true] `false` の場合、HTTP の `cacheControl`/`expires` ヘッダによって有効期限が切れたタイルをマップが再リクエストしません。
+ * @param {LngLatBoundsLike} [options.maxBounds] 範囲を設定した場合、設定された範囲に限定した地図を表示します。
+ * @param {boolean|Object} [options.scrollZoom=true] `true` の場合、"scroll to zoom" インタラクションが有効になります。`Object`の値は {@link ScrollZoomHandler#enable} にオプションとして渡されます。
+ * @param {boolean} [options.boxZoom=true] `true` の場合、"box zoom" インタラクションが有効になります ({@link BoxZoomHandler} を参照してください)。
+ * @param {boolean} [options.dragRotate=true] `true` の場合、"drag to rotate" インタラクションが有効になります ({@link DragRotateHandler} を参照してください)。
+ * @param {boolean|Object} [options.dragPan=true] `true` の場合、"drag to pan" インタラクションが有効になります。`Object`の値は {@link DragPanHandler#enable} にオプションとして渡されます。
+ * @param {boolean} [options.keyboard=true] `true` の場合、キーボードショートカットが有効になります ({@link KeyboardHandler} を参照してください)。
+ * @param {boolean} [options.doubleClickZoom=true] `true` の場合、"double click to zoom" インタラクションが有効になります ({@link DoubleClickZoomHandler} を参照してください)。
+ * @param {boolean|Object} [options.touchZoomRotate=true] `true` の場合、"pinch to rotate and zoom" インタラクションが有効になります。オブジェクト`の値は {@link TwoFingersTouchZoomRotateHandler#enable} にオプションとして渡されます。
+ * @param {boolean|Object} [options.touchPitch=true] `true` の場合、"drag to pitch" インタラクションが有効になります。オブジェクト`の値は {@link TwoFingersTouchPitchHandler#enable} にオプションとして渡されます。
+ * @param {boolean|GestureOptions} [options.cooperativeGestures=undefined] `true` またはオプションオブジェクトに設定すると、デスクトップでは Command/Ctrl を押しながら、モバイルでは2本指で操作しているときのみ、マップにアクセスできるようになります。
+ * 通常のジェスチャーでマップを操作すると、操作案内画面が表示されます。このオプションを有効にすると、"drag to pitch " には3本指のジェスチャーが必要になります。有効なオプションのオブジェクトには、操作案内画面のテキストをカスタマイズするための以下のプロパティが含まれています。以下の値はデフォルトです。
  * {
- *   windowsHelpText: "Use Ctrl + scroll to zoom the map",
- *   macHelpText: "Use ⌘ + scroll to zoom the map",
- *   mobileHelpText: "Use two fingers to move the map",
+ *   windowsHelpText: "Alt キーを押しながらスクロールしてください。",
+ *   macHelpText: "Alt キーを押しながらスクロールしてください。",
+ *   mobileHelpText: "2本指を使って操作してください。",
  * }
- * @param {boolean} [options.trackResize=true] If `true`, the map will automatically resize when the browser window resizes.
- * @param {LngLatLike} [options.center=[0, 0]] The initial geographical centerpoint of the map. If `center` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `[0, 0]` Note: MapLibre GL uses longitude, latitude coordinate order (as opposed to latitude, longitude) to match GeoJSON.
- * @param {number} [options.zoom=0] The initial zoom level of the map. If `zoom` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
- * @param {number} [options.bearing=0] The initial bearing (rotation) of the map, measured in degrees counter-clockwise from north. If `bearing` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`.
- * @param {number} [options.pitch=0] The initial pitch (tilt) of the map, measured in degrees away from the plane of the screen (0-85). If `pitch` is not specified in the constructor options, MapLibre GL JS will look for it in the map's style object. If it is not specified in the style, either, it will default to `0`. Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
- * @param {LngLatBoundsLike} [options.bounds] The initial bounds of the map. If `bounds` is specified, it overrides `center` and `zoom` constructor options.
- * @param {Object} [options.fitBoundsOptions] A {@link Map#fitBounds} options object to use _only_ when fitting the initial `bounds` provided above.
- * @param {boolean} [options.renderWorldCopies=true] If `true`, multiple copies of the world will be rendered side by side beyond -180 and 180 degrees longitude. If set to `false`:
- * - When the map is zoomed out far enough that a single representation of the world does not fill the map's entire
- * container, there will be blank space beyond 180 and -180 degrees longitude.
- * - Features that cross 180 and -180 degrees longitude will be cut in two (with one portion on the right edge of the
- * map and the other on the left edge of the map) at every zoom level.
- * @param {number} [options.maxTileCacheSize=null] The maximum number of tiles stored in the tile cache for a given source. If omitted, the cache will be dynamically sized based on the current viewport.
- * @param {string} [options.localIdeographFontFamily='sans-serif'] Defines a CSS
- *   font-family for locally overriding generation of glyphs in the 'CJK Unified Ideographs', 'Hiragana', 'Katakana' and 'Hangul Syllables' ranges.
- *   In these ranges, font settings from the map's style will be ignored, except for font-weight keywords (light/regular/medium/bold).
- *   Set to `false`, to enable font settings from the map's style for these glyph ranges.
- *   The purpose of this option is to avoid bandwidth-intensive glyph server requests. (See [Use locally generated ideographs](https://maplibre.org/maplibre-gl-js-docs/example/local-ideographs).)
+ * @param {boolean} [options.trackResize=true] `true` の場合、ブラウザのウィンドウサイズが変更されたときに、地図も自動的にリサイズされます。
+ * @param {LngLatLike} [options.center=[0, 0]] 最初の地図上の中心座標。もしコンストラクタのオプションで `center` が指定されていない場合、MapLibre GL JS はマップのスタイルオブジェクトの中からそれを探します。もしスタイルでも指定されていない場合、デフォルトは `[0, 0]` 注：MapLibre GLはGeoJSONに合わせるために、（緯度、経度ではなく）経度、緯度の順番で座標を使用します。
+ * @param {number} [options.zoom=0] 地図の最初のズームレベル。もしコンストラクタのオプションで `zoom` が指定されていない場合、MapLibre GL JS はマップのスタイルオブジェクトの中からそれを探します。スタイルにも指定されていない場合、デフォルトは `0` になります。
+ * @param {number} [options.bearing=0] 地図の最初の方位 (回転) を、北から反時計回りに度単位で指定します。もしコンストラクタのオプションで `bearing` が指定されていない場合、MapLibre GL JS はマップのスタイルオブジェクトの中からこの値を探します。スタイルでも指定されていない場合、デフォルトは `0` になります。
+ * @param {LngLatBoundsLike} [options.bounds] 地図の最初の表示範囲を指定します。`bounds` はコンストラクタのオプションである `center` と `zoom` を上書きします。
+ * @param {Object} [options.fitBoundsOptions] 上記のオプション `bounds` のみに適用する {@link Map#fitBounds} のオプションを指定します。
+ * @param {boolean} [options.renderWorldCopies=true] `true` の場合、経度-180度と180度を越えて、複数の世界のコピーが隣り合ってレンダリングされます。false` に設定すると、以下のようになります。
+- マップをズームアウトして、1つの世界地図がマップのコンテナ全体を満たさない場合、経度180度と-180度の範囲に余白が生じます。
+- 経度180度と-180度をまたぐ地形は、2つに切り分けられます（一方は地図の右端に、他方は左端に表示されます）。をまたぐ地形は、どのズームレベルでも2つに切り分けられます（一方が地図の右端、もう一方が左端）。
+ * @param {number} [options.maxTileCacheSize=null] 与えられたソースに対応するタイルキャッシュに保存されるタイルの最大数です。省略された場合、キャッシュは現在のビューポートに基づいて動的にサイズ調整されます。
+ * @param {string} [options.localIdeographFontFamily='sans-serif'] 'CJK Unified Ideographs' ・ 'ひらがな' ・ 'カタカナ' ・ 'ハングル音節' 文字における字体を局所的に上書きするために、 CSS font-family を指定します。
+ * これらの文字に対して、スタイルからのフォント設定は、font-weight キーワード (light/regular/medium/bold) を除いて、無視されます。
+ * これらの文字に対してスタイルからのフォント設定を有効にするには、`false` を指定してください。
+ * このオプションの目的は、 帯域幅を消費す る グリフサーバーへのリクエストを減らすことです。(「ローカルに生成された表意文字を使用する」(/maplibre-gl-js-docs/example/local-ideographs) を参照してください)。
  * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
  *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
  * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
