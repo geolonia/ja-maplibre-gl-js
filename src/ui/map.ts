@@ -179,31 +179,42 @@ const defaultOptions = {
     crossSourceCollisions: true
 } as CompleteMapOptions;
 
-//  * The `Map` object represents the map on your page. It exposes methods
-//  *  and properties that enable you to programmatically change the map,
-//  *  and fires events as users interact with it.
-//  *
-//  *  You create a `Map` by specifying a `container` and other options.
-//  *  Then MapLibre GL JS initializes the map on the page and returns your `Map`
-//  *  object.
-//  *
-//  *  @extends Evented
-//  *  @param {Object} options
-//  *  @param {HTMLElement|string} options.container The HTML element in which MapLibre GL JS will render the map, or the element's string `id`. The specified element must have no children.
-//  *  @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
-//  *  @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
-//  *  @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
-//  *  @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
-//  *  @param {Object|string} [options.style] The map's MapLibre style. This must be an a JSON object conforming to
-//  *  the schema described in the [MapLibre Style Specification](https:*maplibre.org/maplibre-gl-js-docs/style-spec/), or a URL to
-//  *  such JSON.
-//  *
-//  *
-//  *  @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
-//  *    For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
-//  *    An additional string may optionally be provided to indicate a parameter-styled hash,
-//  *    e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
-//  *    is a custom parameter and bar is an arbitrary hash distinct from the map hash.
+// * he `Map` object represents the map on your page. It exposes methods
+// * and properties that enable you to programmatically change the map,
+// * and fires events as users interact with it.
+// *
+// * You create a `Map` by specifying a `container` and other options.
+// * Then MapLibre GL JS initializes the map on the page and returns your `Map`
+// * object.
+// *
+// * @extends Evented
+// * @param {Object} options
+// * @param {HTMLElement|string} options.container The HTML element in which MapLibre GL JS will render the map, or the element's string `id`. The specified element must have no children.
+// * @param {number} [options.minZoom=0] The minimum zoom level of the map (0-24).
+// * @param {number} [options.maxZoom=22] The maximum zoom level of the map (0-24).
+// * @param {number} [options.minPitch=0] The minimum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+// * @param {number} [options.maxPitch=60] The maximum pitch of the map (0-85). Values greater than 60 degrees are experimental and may result in rendering issues. If you encounter any, please raise an issue with details in the MapLibre project.
+// * @param {Object|string} [options.style] The map's MapLibre style. This must be an a JSON object conforming to
+// * the schema described in the [MapLibre Style Specification](https:*maplibre.org/maplibre-gl-js-docs/style-spec/), or a URL to
+// * such JSON.
+// *
+// *
+// * @param {(boolean|string)} [options.hash=false] If `true`, the map's position (zoom, center latitude, center longitude, bearing, and pitch) will be synced with the hash fragment of the page's URL.
+// *   For example, `http://path/to/my/page.html#2.59/39.26/53.07/-24.1/60`.
+// *   An additional string may optionally be provided to indicate a parameter-styled hash,
+// *   e.g. http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, where foo
+// *   is a custom parameter and bar is an arbitrary hash distinct from the map hash.
+// * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
+// * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
+// * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
+// * @param {number} [options.clickTolerance=3] The max number of pixels a user can shift the mouse pointer during a click for it to be considered a valid click (as opposed to a mouse drag).
+// * @param {boolean} [options.attributionControl=true] If `true`, an {@link AttributionControl} will be added to the map.
+// * @param {string | Array<string>} [options.customAttribution] String or strings to show in an {@link AttributionControl}. Only applicable if `options.attributionControl` is `true`.
+// * @param {boolean} [options.maplibreLogo=false] If `true`, the MapLibre logo will be shown.
+// * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the MapLibre wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
+// * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of MapLibre
+// *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
+
 /**
  * `Map` オブジェクトは、ページ上の地図を表します。プログラムによって地図を操作するための
  * メソッドとプロパティが用意され、ユーザーが地図を操作したときにはイベントが発生します。
@@ -227,18 +238,17 @@ const defaultOptions = {
  *   また，オプションでパラメータ形式のハッシュを示す文字列を追加することもできます。
  *   例: http://path/to/my/page.html#map=2.59/39.26/53.07/-24.1/60&foo=bar, ここで、fooは
  *   カスタムパラメータで、barは地図の座標を示すハッシュとは異なる任意のハッシュです。
- * @param {boolean} [options.interactive=true] If `false`, no mouse, touch, or keyboard listeners will be attached to the map, so it will not respond to interaction.
- * @param {number} [options.bearingSnap=7] The threshold, measured in degrees, that determines when the map's
- *   bearing will snap to north. For example, with a `bearingSnap` of 7, if the user rotates
- *   the map within 7 degrees of north, the map will automatically snap to exact north.
- * @param {boolean} [options.pitchWithRotate=true] If `false`, the map's pitch (tilt) control with "drag to rotate" interaction will be disabled.
- * @param {number} [options.clickTolerance=3] The max number of pixels a user can shift the mouse pointer during a click for it to be considered a valid click (as opposed to a mouse drag).
- * @param {boolean} [options.attributionControl=true] If `true`, an {@link AttributionControl} will be added to the map.
- * @param {string | Array<string>} [options.customAttribution] String or strings to show in an {@link AttributionControl}. Only applicable if `options.attributionControl` is `true`.
- * @param {boolean} [options.maplibreLogo=false] If `true`, the MapLibre logo will be shown.
- * @param {string} [options.logoPosition='bottom-left'] A string representing the position of the MapLibre wordmark on the map. Valid options are `top-left`,`top-right`, `bottom-left`, `bottom-right`.
- * @param {boolean} [options.failIfMajorPerformanceCaveat=false] If `true`, map creation will fail if the performance of MapLibre
- *   GL JS would be dramatically worse than expected (i.e. a software renderer would be used).
+ * @param {boolean} [options.interactive=true] `false` の場合、マウス、タッチ、キーボードのリスナーはマップに割り当てられないため、操作に対して反応しません。
+ * @param {number} [options.bearingSnap=7] 地図の方位が北に向きを変えるタイミングを示す閾値を度数で指定します。
+ *   方位が北に向きを変えるタイミングを決定する閾値です。
+ *   例えば、`bearingSnap` が 7 の場合、ユーザーが北から 7 度以内にマップを回転させると、マップは自動的に真北に向きを合わせます。
+ * @param {boolean} [options.pitchWithRotate=true] `false` の場合、マップのピッチ（傾き）コントロールとドラッグによる回転のインタラクションは無効になります。
+ * @param {number} [options.clickTolerance=3] ユーザーがクリック中にマウスポインターを動かしても、有効なクリックとみなされる最大ピクセル数（マウスドラッグとは異なります）。
+ * @param {boolean} [options.attributionControl=true] `true` の場合、{@link AttributionControl} がマップに追加されます。
+ * @param {string | Array<string>} [options.customAttribution] {@link AttributionControl} に表示する文字列 (複数可)。`option.attributionControl`が `true` の場合のみ適用されます。
+ * @param {boolean} [options.maplibreLogo=false] もし `true` ならば、MapLibre のロゴが表示されます。
+ * @param {string} [options.logoPosition='bottom-left'] 地図上の MapLibre マーク位置を指定する文字列。有効なオプションは `top-left`,`top-right`, `bottom-left`, `bottom-right` です。
+ * @param {boolean} [options.failIfMajorPerformanceCaveat=false] もし `true` ならば、MapLibre GL JS のパフォーマンスが予想より劇的に悪くなる場合（つまり、ソフトウェアレンダラーが使われる場合）、地図の作成は失敗することになります。
  * @param {boolean} [options.preserveDrawingBuffer=false] If `true`, the map's canvas can be exported to a PNG using `map.getCanvas().toDataURL()`. This is `false` by default as a performance optimization.
  * @param {boolean} [options.antialias] If `true`, the gl context will be created with MSAA antialiasing, which can be useful for antialiasing custom layers. this is `false` by default as a performance optimization.
  * @param {boolean} [options.refreshExpiredTiles=true] If `false`, the map won't attempt to re-request tiles once they expire per their HTTP `cacheControl`/`expires` headers.
