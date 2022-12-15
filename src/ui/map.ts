@@ -345,15 +345,14 @@ const defaultOptions = {
  * これらの文字に対して、スタイルからのフォント設定は、font-weight キーワード (light/regular/medium/bold) を除いて、無視されます。
  * これらの文字に対してスタイルからのフォント設定を有効にするには、`false` を指定してください。
  * このオプションの目的は、 帯域幅を消費す る グリフサーバーへのリクエストを減らすことです。(「ローカルに生成された表意文字を使用する」(/maplibre-gl-js-docs/example/local-ideographs) を参照してください)。
- * @param {RequestTransformFunction} [options.transformRequest=null] A callback run before the Map makes a request for an external URL. The callback can be used to modify the url, set headers, or set the credentials property for cross-origin requests.
- *   Expected to return an object with a `url` property and optionally `headers` and `credentials` properties.
- * @param {boolean} [options.collectResourceTiming=false] If `true`, Resource Timing API information will be collected for requests made by GeoJSON and Vector Tile web workers (this information is normally inaccessible from the main Javascript thread). Information will be returned in a `resourceTiming` property of relevant `data` events.
- * @param {number} [options.fadeDuration=300] Controls the duration of the fade-in/fade-out animation for label collisions, in milliseconds. This setting affects all symbol layers. This setting does not affect the duration of runtime styling transitions or raster tile cross-fading.
- * @param {boolean} [options.crossSourceCollisions=true] If `true`, symbols from multiple sources can collide with each other during collision detection. If `false`, collision detection is run separately for the symbols in each source.
- * @param {Object} [options.locale=null] A patch to apply to the default localization table for UI strings, e.g. control tooltips. The `locale` object maps namespaced UI string IDs to translated strings in the target language; see `src/ui/default_locale.js` for an example with all supported string IDs. The object may specify all UI strings (thereby adding support for a new translation) or only a subset of strings (thereby patching the default translation table).
- * @param {number} [options.pixelRatio] The pixel ratio. The canvas' `width` attribute will be `container.clientWidth * pixelRatio` and its `height` attribute will be `container.clientHeight * pixelRatio`. Defaults to `devicePixelRatio` if not specified.
+ * @param {RequestTransformFunction} [options.transformRequest=null] Map が外部 URL にリクエストを行う前に実行されるコールバックです。このコールバックは URL の修正、ヘッダーの設定、クロスオリジンリクエストのためのクレデンシャルプロパティの設定に使用することができます。`url` プロパティと、オプションで `headers` と `credentials` プロパティを持つオブジェクトを返すことが期待されています。
+ * @param {boolean} [options.collectResourceTiming=false] もし `true` ならば、GeoJSON と Vector Tile web worker によって行われたリクエストに対して、Resource Timing API の情報が収集されます (この情報は通常、メイン Javascript スレッドからアクセスすることができません)。この情報は、関連する `data` イベントの `resourceTiming` プロパティで返されます。
+ * @param {number} [options.fadeDuration=300] ラベル衝突時のフェードイン/フェードアウトアニメーションの時間をミリ秒単位で指定します。この設定は、すべてのSymbolレイヤーに適用されます。この設定は、ランタイムスタイル遷移やラスタータイルクロスフェードの持続時間には影響しません。
+ * @param {boolean} [options.crossSourceCollisions=true] `true` の場合、シンボルの衝突検出の際に、複数のソースのシンボル同士で衝突判定が有効になります。`false` の場合、ソースが別のシンボル同士は衝突判定が無効になります。
+ * @param {Object} [options.locale=null] コントロールのツールチップなどの UI の文字列のデフォルトのローカライズテーブルに適用するためのパッチです。locale` オブジェクトは、名前空間を持つ UI 文字列 ID をターゲット言語の翻訳文字列にマッピングします。サポートされているすべての文字列 ID を含む例については、 `src/ui/default_locale.js` を参照してください。このオブジェクトは、全ての UI 文字列を指定することも (それによって、新しい翻訳をサポートします)、文字列のサブセットのみを指定することも (それによって、デフォルトの翻訳テーブルにパッチを適用します) できます。
+ * @param {number} [options.pixelRatio] ピクセルの比率です。キャンバスの `width` 属性には `container.clientWidth * pixelRatio` が、 `height` 属性には `container.clientHeight * pixelRatio` が指定されます。指定しない場合は `devicePixelRatio` がデフォルトとなります。
  * @example
- * var map = new maplibregl.Map({
+ * var map = new geolonia.Map({
  *   container: 'map',
  *   center: [-122.420679, 37.772537],
  *   zoom: 13,
@@ -369,7 +368,7 @@ const defaultOptions = {
  *     }
  *   }
  * });
- * @see [Display a map](https://maplibre.org/maplibre-gl-js-docs/example/simple-map/)
+ * @see [Display a map](/maplibre-gl-js-docs/example/simple-map/)
  */
 class Map extends Camera {
     style: Style;
