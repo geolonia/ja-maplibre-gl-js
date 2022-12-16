@@ -616,17 +616,28 @@ class Map extends Camera {
         return this._mapId;
     }
 
+    // /**
+    //  * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
+    //  *
+    //  * @param {IControl} control The {@link IControl} to add.
+    //  * @param {string} [position] position on the map to which the control will be added.
+    //  * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * // Add zoom and rotation controls to the map.
+    //  * map.addControl(new maplibregl.NavigationControl());
+    //  * @see [Display map navigation controls](https://maplibre.org/maplibre-gl-js-docs/example/navigation/)
+    //  */
     /**
-     * Adds an {@link IControl} to the map, calling `control.onAdd(this)`.
+     * `control.onAdd(this)` を呼び，{@link IControl} を地図に追加します．
      *
-     * @param {IControl} control The {@link IControl} to add.
-     * @param {string} [position] position on the map to which the control will be added.
-     * Valid values are `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`. Defaults to `'top-right'`.
+     * @param {IControl} control 追加する {@link IControl} を指定して下さい。
+     * @param {string} [position] コントロールを追加する地図上の位置を指定して下さい。有効な値は `'top-left'`, `'top-right'`, `'bottom-left'`, および `'bottom-right'` です。デフォルトは `'top-right'` です。
      * @returns {Map} `this`
      * @example
-     * // Add zoom and rotation controls to the map.
-     * map.addControl(new maplibregl.NavigationControl());
-     * @see [Display map navigation controls](https://maplibre.org/maplibre-gl-js-docs/example/navigation/)
+     * // 地図にズームと回転のコントロールを追加。
+     * map.addControl(new geolonia.NavigationControl());
+     * @see [Display map navigation controls](/maplibre-gl-js-docs/example/navigation/)
      */
     addControl(control: IControl, position?: ControlPosition) {
         if (position === undefined) {
