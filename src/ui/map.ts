@@ -1889,51 +1889,95 @@ class Map extends Camera {
         return this.style.getSource(id);
     }
 
+    // /**
+    //  * Add an image to the style. This image can be displayed on the map like any other icon in the style's
+    //  * sprite using the image's ID with
+    //  * [`icon-image`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layout-symbol-icon-image),
+    //  * [`background-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-background-background-pattern),
+    //  * [`fill-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-fill-fill-pattern),
+    //  * or [`line-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-line-line-pattern).
+    //  * A {@link Map.event:error} event will be fired if there is not enough space in the sprite to add this image.
+    //  *
+    //  * @param id The ID of the image.
+    //  * @param image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
+    //  * properties with the same format as `ImageData`.
+    //  * @param options Options object.
+    //  * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
+    //  * @param options.sdf Whether the image should be interpreted as an SDF image
+    //  * @param options.content `[x1, y1, x2, y2]`  If `icon-text-fit` is used in a layer with this image, this option defines the part of the image that can be covered by the content in `text-field`.
+    //  * @param options.stretchX `[[x1, x2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched horizontally.
+    //  * @param options.stretchY `[[y1, y2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched vertically.
+    //  *
+    //  * @example
+    //  * // If the style's sprite does not already contain an image with ID 'cat',
+    //  * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
+    //  * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png', function(error, image) {
+    //  *    if (error) throw error;
+    //  *    if (!map.hasImage('cat')) map.addImage('cat', image);
+    //  * });
+    //  *
+    //  *
+    //  * // Add a stretchable image that can be used with `icon-text-fit`
+    //  * // In this example, the image is 600px wide by 400px high.
+    //  * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/8/89/Black_and_White_Boxed_%28bordered%29.png', function(error, image) {
+    //  *    if (error) throw error;
+    //  *    if (!map.hasImage('border-image')) {
+    //  *      map.addImage('border-image', image, {
+    //  *          content: [16, 16, 300, 384], // place text over left half of image, avoiding the 16px border
+    //  *          stretchX: [[16, 584]], // stretch everything horizontally except the 16px border
+    //  *          stretchY: [[16, 384]], // stretch everything vertically except the 16px border
+    //  *      });
+    //  *    }
+    //  * });
+    //  *
+    //  *
+    //  * @see Use `HTMLImageElement`: [Add an icon to the map](https://maplibre.org/maplibre-gl-js-docs/example/add-image/)
+    //  * @see Use `ImageData`: [Add a generated icon to the map](https://maplibre.org/maplibre-gl-js-docs/example/add-image-generated/)
+    //  */
     // eslint-disable-next-line jsdoc/require-returns
     /**
-     * Add an image to the style. This image can be displayed on the map like any other icon in the style's
-     * sprite using the image's ID with
-     * [`icon-image`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layout-symbol-icon-image),
-     * [`background-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-background-background-pattern),
-     * [`fill-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-fill-fill-pattern),
-     * or [`line-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-line-line-pattern).
-     * A {@link Map.event:error} event will be fired if there is not enough space in the sprite to add this image.
+     * スタイルに画像を追加します。この画像は他のアイコンと同様に、スタイルのスプライトに
+     * [`icon-image`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layout-symbol-icon-image)、
+     * [`background-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-background-background-pattern)、
+     * [`fill-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-fill-fill-pattern)、
+     * [`line-pattern`](https://maplibre.org/maplibre-gl-js-docs/style-spec/#paint-line-line-pattern)
+     * を使って地図上に表示させることができます。
+     * スプライトに画像を追加するための十分なスペースがない場合、{@link Map.event:error} イベントが発生します。
      *
-     * @param id The ID of the image.
-     * @param image The image as an `HTMLImageElement`, `ImageData`, `ImageBitmap` or object with `width`, `height`, and `data`
-     * properties with the same format as `ImageData`.
-     * @param options Options object.
-     * @param options.pixelRatio The ratio of pixels in the image to physical pixels on the screen
-     * @param options.sdf Whether the image should be interpreted as an SDF image
-     * @param options.content `[x1, y1, x2, y2]`  If `icon-text-fit` is used in a layer with this image, this option defines the part of the image that can be covered by the content in `text-field`.
-     * @param options.stretchX `[[x1, x2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched horizontally.
-     * @param options.stretchY `[[y1, y2], ...]` If `icon-text-fit` is used in a layer with this image, this option defines the part(s) of the image that can be stretched vertically.
+     * @param id 画像のID
+     * @param image `HTMLImageElement`, `ImageData`, `ImageBitmap` または `ImageData` と同じフォーマットを持つ `width`, `height`, `data` プロパティを持つオブジェクトとしての画像です。
+     * @param options オプションのオブジェクト
+     * @param options.pixelRatio デバイス・ピクセル比（スクリーン上の物理的なピクセルに対する画像のピクセルの比率）
+     * @param options.sdf SDF画像として解釈するかどうかを指定
+     * @param options.content `[x1, y1, x2, y2]` この画像を含むレイヤーで `icon-text-fit` が使用されている場合、このオプションは `text-field` のコンテンツがカバーできる画像の部分を定義します。
+     * @param options.stretchX `[[x1, x2], ...]` この画像と一緒のレイヤーで `icon-text-fit` が使われている場合、このオプションは画像の水平方向に伸縮できる部分を定義します。
+     * @param options.stretchY `[[y1, y2], ...]` この画像と一緒にレイヤーで `icon-text-fit` が使われている場合、このオプションは画像の縦方向に伸縮できる部分を定義します。
      *
      * @example
-     * // If the style's sprite does not already contain an image with ID 'cat',
-     * // add the image 'cat-icon.png' to the style's sprite with the ID 'cat'.
+     * // スタイルのスプライトに ID 'cat' の画像が含まれていない場合。
+     * // ID 'cat'を持つ画像 'cat-icon.png' をスタイルのスプライトに追加します。
      * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png', function(error, image) {
      *    if (error) throw error;
      *    if (!map.hasImage('cat')) map.addImage('cat', image);
      * });
      *
      *
-     * // Add a stretchable image that can be used with `icon-text-fit`
-     * // In this example, the image is 600px wide by 400px high.
+     * // `icon-text-fit` で使用できる、伸縮可能な画像を追加します。
+     * // この例では、画像は幅600px×高さ400pxです。
      * map.loadImage('https://upload.wikimedia.org/wikipedia/commons/8/89/Black_and_White_Boxed_%28bordered%29.png', function(error, image) {
      *    if (error) throw error;
      *    if (!map.hasImage('border-image')) {
      *      map.addImage('border-image', image, {
-     *          content: [16, 16, 300, 384], // place text over left half of image, avoiding the 16px border
-     *          stretchX: [[16, 584]], // stretch everything horizontally except the 16px border
-     *          stretchY: [[16, 384]], // stretch everything vertically except the 16px border
+     *          content: [16, 16, 300, 384], // 画像の左半分にテキストを配置し、16pxのボーダーを回避する。
+     *          stretchX: [[16, 584]], // 16pxのボーダーを除き、すべてを水平に伸ばします。
+     *          stretchY: [[16, 384]], // 16pxのボーダーを除くすべてを縦に伸ばす
      *      });
      *    }
      * });
      *
      *
-     * @see Use `HTMLImageElement`: [Add an icon to the map](https://maplibre.org/maplibre-gl-js-docs/example/add-image/)
-     * @see Use `ImageData`: [Add a generated icon to the map](https://maplibre.org/maplibre-gl-js-docs/example/add-image-generated/)
+     * @see Use `HTMLImageElement`: [地図にアイコンを追加する](https://maplibre.org/maplibre-gl-js-docs/example/add-image/)
+     * @see Use `ImageData`: [生成したアイコンを地図に追加する](https://maplibre.org/maplibre-gl-js-docs/example/add-image-generated/)
      */
     addImage(id: string,
         image: HTMLImageElement | ImageBitmap | ImageData | {
