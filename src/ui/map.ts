@@ -2281,8 +2281,7 @@ class Map extends Camera {
      * レイヤーのデータソース。ソースの ID を使用して、 _あらかじめ定義されている_ ソースを参照します。
      * [MapLibre Style Specification](/style-spec/sources/) で定義されているソースオブジェクトを直接使用して _new source_ を参照することもできます。
      * これは `custom` と `background` を除くすべての `layer.type` オプションで **必須** となります。
-     * @param {string} [layer.sourceLayer] (optional) The name of the source layer within the specified `layer.source` to use for this style layer.
-     * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+     * @param {string} [layer.sourceLayer] (オプション) このスタイルレイヤーに使用する、指定された `layer.source` 中のソースレイヤーの名前です。これはベクトルタイルのソースでのみ有効で、`layer.source` が `vector` 型の場合、 **必須** です。
      * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
      * Only features that match the filter are displayed.
      * The MapLibre Style Specification includes more information on the limitations of the [`filter`](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#filter) parameter
