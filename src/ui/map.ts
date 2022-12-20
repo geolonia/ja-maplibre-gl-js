@@ -2134,45 +2134,154 @@ class Map extends Camera {
         getImage(this._requestManager.transformRequest(url, ResourceType.Image), callback);
     }
 
+    // /**
+    //  * Returns an Array of strings containing the IDs of all images currently available in the map.
+    //  * This includes both images from the style's original sprite
+    //  * and any images that have been added at runtime using {@link Map#addImage}.
+    //  *
+    //  * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map.
+    //  *
+    //  * @example
+    //  * var allImages = map.listImages();
+    //  *
+    //  */
+    // listImages() {
+    //     return this.style.listImages();
+    // }
+    // /**
+    //  * Adds a [MapLibre style layer](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers)
+    //  * to the map's style.
+    //  *
+    //  * A layer defines how data from a specified source will be styled. Read more about layer types
+    //  * and available paint and layout properties in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers).
+    //  *
+    //  * TODO: JSDoc can't pass @param {(LayerSpecification & {source?: string | SourceSpecification}) | CustomLayerInterface} layer The layer to add,
+    //  * @param {Object} layer
+    //  * conforming to either the MapLibre Style Specification's [layer definition](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers) or,
+    //  * less commonly, the {@link CustomLayerInterface} specification.
+    //  * The MapLibre Style Specification's layer definition is appropriate for most layers.
+    //  *
+    //  * @param {string} layer.id A unique identifer that you define.
+    //  * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
+    //  * A list of layer types is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#type).
+    //  *
+    //  * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
+    //  * @param {string | SourceSpecification} [layer.source] The data source for the layer.
+    //  * Reference a source that has _already been defined_ using the source's unique id.
+    //  * Reference a _new source_ using a source object (as defined in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/sources/)) directly.
+    //  * This is **required** for all `layer.type` options _except_ for `custom` and `background`.
+    //  * @param {string} [layer.sourceLayer] (optional) The name of the source layer within the specified `layer.source` to use for this style layer.
+    //  * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+    //  * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
+    //  * Only features that match the filter are displayed.
+    //  * The MapLibre Style Specification includes more information on the limitations of the [`filter`](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#filter) parameter
+    //  * and a complete list of available [expressions](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/).
+    //  * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
+    //  * @param {Object} [layer.paint] (optional) Paint properties for the layer.
+    //  * Available paint properties vary by `layer.type`.
+    //  * A full list of paint properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
+    //  * If no paint properties are specified, default values will be used.
+    //  * @param {Object} [layer.layout] (optional) Layout properties for the layer.
+    //  * Available layout properties vary by `layer.type`.
+    //  * A full list of layout properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
+    //  * If no layout properties are specified, default values will be used.
+    //  * @param {number} [layer.maxzoom] (optional) The maximum zoom level for the layer.
+    //  * At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
+    //  * The value can be any number between `0` and `24` (inclusive).
+    //  * If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+    //  * @param {number} [layer.minzoom] (optional) The minimum zoom level for the layer.
+    //  * At zoom levels less than the minzoom, the layer will be hidden.
+    //  * The value can be any number between `0` and `24` (inclusive).
+    //  * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
+    //  * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
+    //  * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
+    //  * See {@link CustomLayerInterface} for more information.
+    //  * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
+    //  * resulting in the new layer appearing visually beneath the existing layer.
+    //  * If this argument is not specified, the layer will be appended to the end of the layers array
+    //  * and appear visually above all other layers.
+    //  *
+    //  * @returns {Map} `this`
+    //  *
+    //  * @example
+    //  * // Add a circle layer with a vector source
+    //  * map.addLayer({
+    //  *   id: 'points-of-interest',
+    //  *   source: {
+    //  *     type: 'vector',
+    //  *     url: 'https://demotiles.maplibre.org/tiles/tiles.json'
+    //  *   },
+    //  *   'source-layer': 'poi_label',
+    //  *   type: 'circle',
+    //  *   paint: {
+    //  *     // MapLibre Style Specification paint properties
+    //  *   },
+    //  *   layout: {
+    //  *     // MapLibre Style Specification layout properties
+    //  *   }
+    //  * });
+    //  *
+    //  * @example
+    //  * // Define a source before using it to create a new layer
+    //  * map.addSource('state-data', {
+    //  *   type: 'geojson',
+    //  *   data: 'path/to/data.geojson'
+    //  * });
+    //  *
+    //  * map.addLayer({
+    //  *   id: 'states',
+    //  *   // References the GeoJSON source defined above
+    //  *   // and does not require a `source-layer`
+    //  *   source: 'state-data',
+    //  *   type: 'symbol',
+    //  *   layout: {
+    //  *     // Set the label content to the
+    //  *     // feature's `name` property
+    //  *     text-field: ['get', 'name']
+    //  *   }
+    //  * });
+    //  *
+    //  * @example
+    //  * // Add a new symbol layer before an existing layer
+    //  * map.addLayer({
+    //  *   id: 'states',
+    //  *   // References a source that's already been defined
+    //  *   source: 'state-data',
+    //  *   type: 'symbol',
+    //  *   layout: {
+    //  *     // Set the label content to the
+    //  *     // feature's `name` property
+    //  *     text-field: ['get', 'name']
+    //  *   }
+    //  * // Add the layer before the existing `cities` layer
+    //  * }, 'cities');
+    //  *
+    //  * @see [Create and style clusters](https://maplibre.org/maplibre-gl-js-docs/example/cluster/)
+    //  * @see [Add a vector tile source](https://maplibre.org/maplibre-gl-js-docs/example/vector-source/)
+    //  * @see [Add a WMS source](https://maplibre.org/maplibre-gl-js-docs/example/wms/)
+    //  */
     /**
-     * Returns an Array of strings containing the IDs of all images currently available in the map.
-     * This includes both images from the style's original sprite
-     * and any images that have been added at runtime using {@link Map#addImage}.
+     * 地図のスタイルに[MapLibre style layer](/style-spec/#layers)を追加します。
      *
-     * @returns {Array<string>} An Array of strings containing the names of all sprites/images currently available in the map.
-     *
-     * @example
-     * var allImages = map.listImages();
-     *
-     */
-    listImages() {
-        return this.style.listImages();
-    }
-
-    /**
-     * Adds a [MapLibre style layer](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers)
-     * to the map's style.
-     *
-     * A layer defines how data from a specified source will be styled. Read more about layer types
-     * and available paint and layout properties in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers).
+     * レイヤーは、指定されたソースからのデータがどのようにスタイリングされるかを定義します。
+     * レイヤーの種類と利用可能なペイントとレイアウトのプロパティについての詳細は、 [MapLibre Style Specification](/style-spec/#layers) をご参照ください。
      *
      * TODO: JSDoc can't pass @param {(LayerSpecification & {source?: string | SourceSpecification}) | CustomLayerInterface} layer The layer to add,
      * @param {Object} layer
-     * conforming to either the MapLibre Style Specification's [layer definition](https://maplibre.org/maplibre-gl-js-docs/style-spec/#layers) or,
-     * less commonly, the {@link CustomLayerInterface} specification.
-     * The MapLibre Style Specification's layer definition is appropriate for most layers.
+     * MapLibre Style Specification の [レイヤー定義](/style-spec/#layers) または、
+     * あまり一般的ではありませんが、{@link CustomLayerInterface} 仕様に準拠したレイヤーです。
+     * MapLibre Style Specification のレイヤー定義はほとんどのレイヤーに適切です。
      *
-     * @param {string} layer.id A unique identifer that you define.
-     * @param {string} layer.type The type of layer (for example `fill` or `symbol`).
-     * A list of layer types is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#type).
+     * @param {string} layer.id レイヤーのID。このIDは、スタイル内で一意でなければなりません。
+     * @param {string} layer.type レイヤーのタイプ（例えば `fill` や `symbol` など）。
+     * レイヤーのタイプの一覧は [MapLibre Style Specification](/style-spec/layers/#type) に記載されています。
      *
-     * (This can also be `custom`. For more information, see {@link CustomLayerInterface}.)
-     * @param {string | SourceSpecification} [layer.source] The data source for the layer.
-     * Reference a source that has _already been defined_ using the source's unique id.
-     * Reference a _new source_ using a source object (as defined in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/sources/)) directly.
-     * This is **required** for all `layer.type` options _except_ for `custom` and `background`.
-     * @param {string} [layer.sourceLayer] (optional) The name of the source layer within the specified `layer.source` to use for this style layer.
-     * This is only applicable for vector tile sources and is **required** when `layer.source` is of the type `vector`.
+     * ( `custom` を指定することもできます。詳しくは{@link CustomLayerInterface}をご覧ください)。
+     * @param {string | SourceSpecification} [layer.source]
+     * レイヤーのデータソース。ソースの ID を使用して、 _あらかじめ定義されている_ ソースを参照します。
+     * [MapLibre Style Specification](/style-spec/sources/) で定義されているソースオブジェクトを直接使用して _new source_ を参照することもできます。
+     * これは `custom` と `background` を除くすべての `layer.type` オプションで **必須** となります。
+     * @param {string} [layer.sourceLayer] (オプション) このスタイルレイヤーに使用する、指定された `layer.source` 中のソースレイヤーの名前です。これはベクトルタイルのソースでのみ有効で、`layer.source` が `vector` 型の場合、 **必須** です。
      * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
      * Only features that match the filter are displayed.
      * The MapLibre Style Specification includes more information on the limitations of the [`filter`](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#filter) parameter
