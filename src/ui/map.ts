@@ -2282,34 +2282,24 @@ class Map extends Camera {
      * [MapLibre Style Specification](/style-spec/sources/) で定義されているソースオブジェクトを直接使用して _new source_ を参照することもできます。
      * これは `custom` と `background` を除くすべての `layer.type` オプションで **必須** となります。
      * @param {string} [layer.sourceLayer] (オプション) このスタイルレイヤーに使用する、指定された `layer.source` 中のソースレイヤーの名前です。これはベクトルタイルのソースでのみ有効で、`layer.source` が `vector` 型の場合、 **必須** です。
-     * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
-     * Only features that match the filter are displayed.
-     * The MapLibre Style Specification includes more information on the limitations of the [`filter`](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#filter) parameter
-     * and a complete list of available [expressions](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/).
-     * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
-     * @param {Object} [layer.paint] (optional) Paint properties for the layer.
-     * Available paint properties vary by `layer.type`.
-     * A full list of paint properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
-     * If no paint properties are specified, default values will be used.
-     * @param {Object} [layer.layout] (optional) Layout properties for the layer.
-     * Available layout properties vary by `layer.type`.
-     * A full list of layout properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
-     * If no layout properties are specified, default values will be used.
-     * @param {number} [layer.maxzoom] (optional) The maximum zoom level for the layer.
-     * At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
-     * The value can be any number between `0` and `24` (inclusive).
-     * If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {number} [layer.minzoom] (optional) The minimum zoom level for the layer.
-     * At zoom levels less than the minzoom, the layer will be hidden.
-     * The value can be any number between `0` and `24` (inclusive).
-     * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
-     * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
-     * See {@link CustomLayerInterface} for more information.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
-     * resulting in the new layer appearing visually beneath the existing layer.
-     * If this argument is not specified, the layer will be appended to the end of the layers array
-     * and appear visually above all other layers.
+     * @param {array} [layer.filter] (オプション) ソースのフィーチャーをフィルタリングする条件を指定する式です。
+     * MapLibre Style Specification には、[`filter`](/style-spec/layers/#filter) パラメータの制限に関する詳細情報と、
+     * 利用可能な [expression](/style-spec/expressions/) の一覧が記載されています。フィルターが提供されない場合、ソース（ベクタータイルセットの場合はソースレイヤー）の全てのフィーチャーが表示されます。
+     * @param {Object} [layer.paint] (オプション) スタイルレイヤーのペイントプロパティ。
+     * 利用可能なペイントプロパティは `layer.type` によって異なります。
+     * 各レイヤタイプのペイントプロパティの一覧は、[MapLibre Style Specification](/style-spec/layers/)で見ることができます。
+     * ペイントプロパティが指定されない場合、デフォルト値が使用されます。
+     * @param {Object} [layer.layout] (オプション) レイヤーのレイアウトプロパティ。利用可能なレイアウトプロパティは `layer.type` によって異なります。
+     * それぞれのレイヤータイプのレイアウトプロパティの一覧は、[MapLibre Style Specification](/style-spec/layers/) で見ることができます。
+     * レイアウトプロパティが指定されない場合、デフォルト値が使用されます。
+     * @param {number} [layer.maxzoom] (オプション) レイヤーの最大ズームレベル。maxzoomと同じかそれ以上のズームレベルでは、レイヤーは非表示になります。この値は `0` から `24` (この値を含む) までの任意の値を指定することができます。
+     * maxzoom を指定しない場合、タイルが存在するすべてのズームレベルでレイヤーが表示されます。
+     * @param {number} [layer.minzoom] (オプション) レイヤーの最小ズームレベル。minzoomより小さいズームレベルでは、レイヤーは非表示になります。この値は `0` から `24` (この値を含む) までの任意の値を指定することができます。
+     * minzoom を指定しない場合、タイルが存在するすべてのズームレベルでレイヤーが表示されます。
+     * @param {Object} [layer.metadata] (オプション) レイヤーを管理するのに便利な任意のプロパティですが、レンダリングには影響しません。
+     * @param {string} [layer.renderingMode] これは `custom` タイプを持つレイヤーにのみ適用されます。詳しくは {@link CustomLayerInterface} をご覧ください。
+     * @param {string} [beforeId] 新規レイヤーを既存のレイヤーの直前に追加し、視覚的に新規レイヤーが既存のレイヤーの下に表示されるように指定するための既存レイヤーの ID。
+     * この引数を指定しない場合、新規レイヤーはレイヤー配列の末尾に追加され、他のすべてのレイヤーの上に表示されます。
      *
      * @returns {Map} `this`
      *
