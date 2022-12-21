@@ -1818,11 +1818,18 @@ class Map extends Camera {
         return this.terrain && this.terrain.options;
     }
 
+    // /**
+    //  * Returns a Boolean indicating whether all tiles in the viewport from all sources on
+    //  * the style are loaded.
+    //  *
+    //  * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+    //  * @example
+    //  * var tilesLoaded = map.areTilesLoaded();
+    //  */
     /**
-     * Returns a Boolean indicating whether all tiles in the viewport from all sources on
-     * the style are loaded.
+     * スタイル内のすべてのソースの、viewport 内のタイルが全てロードされているかどうかを判定します。返り値は Boolean です。
      *
-     * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+     * @returns {boolean} すべてのタイルが読み込まれたかどうかを示す真偽値。
      * @example
      * var tilesLoaded = map.areTilesLoaded();
      */
@@ -2304,25 +2311,25 @@ class Map extends Camera {
      * @returns {Map} `this`
      *
      * @example
-     * // Add a circle layer with a vector source
+     * // vector ソースの circle レイヤーを追加する
      * map.addLayer({
      *   id: 'points-of-interest',
      *   source: {
      *     type: 'vector',
-     *     url: 'https://demotiles.maplibre.org/tiles/tiles.json'
+     *     url: 'https://tileserver.geolonia.com/embed-simple-vector-sample/tiles.json'
      *   },
      *   'source-layer': 'poi_label',
      *   type: 'circle',
      *   paint: {
-     *     // MapLibre Style Specification paint properties
+     *     // MapLibre Style Specification の paint プロパティ
      *   },
      *   layout: {
-     *     // MapLibre Style Specification layout properties
+     *     // MapLibre Style Specification layout プロパティ
      *   }
      * });
      *
      * @example
-     * // Define a source before using it to create a new layer
+     * // 新しいレイヤーを作成する前に、ソースを追加する
      * map.addSource('state-data', {
      *   type: 'geojson',
      *   data: 'path/to/data.geojson'
@@ -2330,35 +2337,33 @@ class Map extends Camera {
      *
      * map.addLayer({
      *   id: 'states',
-     *   // References the GeoJSON source defined above
-     *   // and does not require a `source-layer`
+     *   // 上記で定義した GeoJSON ソースを参照する。
+     *   // GeoJSON ソースは、`source-layer` を必要としません。
      *   source: 'state-data',
      *   type: 'symbol',
      *   layout: {
-     *     // Set the label content to the
-     *     // feature's `name` property
+     *     // ラベルの内容を、そのフィーチャーの `name` プロパティに設定します。
      *     text-field: ['get', 'name']
      *   }
      * });
      *
      * @example
-     * // Add a new symbol layer before an existing layer
+     * // 既存のレイヤーの直前に新しいシンボルレイヤーを追加します。
      * map.addLayer({
      *   id: 'states',
-     *   // References a source that's already been defined
+     *   // 既に定義されているソースを参照します。
      *   source: 'state-data',
      *   type: 'symbol',
      *   layout: {
-     *     // Set the label content to the
-     *     // feature's `name` property
+     *     // ラベルの内容を、そのフィーチャーの `name` プロパティに設定します。
      *     text-field: ['get', 'name']
      *   }
-     * // Add the layer before the existing `cities` layer
+     * // 既存の `cities` レイヤーの直前にレイヤーを追加します。
      * }, 'cities');
      *
-     * @see [Create and style clusters](https://maplibre.org/maplibre-gl-js-docs/example/cluster/)
-     * @see [Add a vector tile source](https://maplibre.org/maplibre-gl-js-docs/example/vector-source/)
-     * @see [Add a WMS source](https://maplibre.org/maplibre-gl-js-docs/example/wms/)
+     * @see [クラスターの作成とスタイル](https://maplibre.org/maplibre-gl-js-docs/example/cluster/)
+     * @see [ベクトルタイルのソースを追加](https://maplibre.org/maplibre-gl-js-docs/example/vector-source/)
+     * @see [WMSソースの追加](https://maplibre.org/maplibre-gl-js-docs/example/wms/)
      */
     addLayer(layer: (LayerSpecification & {source?: string | SourceSpecification}) | CustomLayerInterface, beforeId?: string) {
         this._lazyInitEmptyStyle();
