@@ -1818,11 +1818,18 @@ class Map extends Camera {
         return this.terrain && this.terrain.options;
     }
 
+    // /**
+    //  * Returns a Boolean indicating whether all tiles in the viewport from all sources on
+    //  * the style are loaded.
+    //  *
+    //  * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+    //  * @example
+    //  * var tilesLoaded = map.areTilesLoaded();
+    //  */
     /**
-     * Returns a Boolean indicating whether all tiles in the viewport from all sources on
-     * the style are loaded.
+     * スタイル内のすべてのソースの、viewport 内のタイルが全てロードされているかどうかを判定します。返り値は Boolean です。
      *
-     * @returns {boolean} A Boolean indicating whether all tiles are loaded.
+     * @returns {boolean} すべてのタイルが読み込まれたかどうかを示す真偽値。
      * @example
      * var tilesLoaded = map.areTilesLoaded();
      */
@@ -2282,57 +2289,47 @@ class Map extends Camera {
      * [MapLibre Style Specification](/style-spec/sources/) で定義されているソースオブジェクトを直接使用して _new source_ を参照することもできます。
      * これは `custom` と `background` を除くすべての `layer.type` オプションで **必須** となります。
      * @param {string} [layer.sourceLayer] (オプション) このスタイルレイヤーに使用する、指定された `layer.source` 中のソースレイヤーの名前です。これはベクトルタイルのソースでのみ有効で、`layer.source` が `vector` 型の場合、 **必須** です。
-     * @param {array} [layer.filter] (optional) An expression specifying conditions on source features.
-     * Only features that match the filter are displayed.
-     * The MapLibre Style Specification includes more information on the limitations of the [`filter`](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/#filter) parameter
-     * and a complete list of available [expressions](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/).
-     * If no filter is provided, all features in the source (or source layer for vector tilesets) will be displayed.
-     * @param {Object} [layer.paint] (optional) Paint properties for the layer.
-     * Available paint properties vary by `layer.type`.
-     * A full list of paint properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
-     * If no paint properties are specified, default values will be used.
-     * @param {Object} [layer.layout] (optional) Layout properties for the layer.
-     * Available layout properties vary by `layer.type`.
-     * A full list of layout properties for each layer type is available in the [MapLibre Style Specification](https://maplibre.org/maplibre-gl-js-docs/style-spec/layers/).
-     * If no layout properties are specified, default values will be used.
-     * @param {number} [layer.maxzoom] (optional) The maximum zoom level for the layer.
-     * At zoom levels equal to or greater than the maxzoom, the layer will be hidden.
-     * The value can be any number between `0` and `24` (inclusive).
-     * If no maxzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {number} [layer.minzoom] (optional) The minimum zoom level for the layer.
-     * At zoom levels less than the minzoom, the layer will be hidden.
-     * The value can be any number between `0` and `24` (inclusive).
-     * If no minzoom is provided, the layer will be visible at all zoom levels for which there are tiles available.
-     * @param {Object} [layer.metadata] (optional) Arbitrary properties useful to track with the layer, but do not influence rendering.
-     * @param {string} [layer.renderingMode] This is only applicable for layers with the type `custom`.
-     * See {@link CustomLayerInterface} for more information.
-     * @param {string} [beforeId] The ID of an existing layer to insert the new layer before,
-     * resulting in the new layer appearing visually beneath the existing layer.
-     * If this argument is not specified, the layer will be appended to the end of the layers array
-     * and appear visually above all other layers.
+     * @param {array} [layer.filter] (オプション) ソースのフィーチャーをフィルタリングする条件を指定する式です。
+     * MapLibre Style Specification には、[`filter`](/style-spec/layers/#filter) パラメータの制限に関する詳細情報と、
+     * 利用可能な [expression](/style-spec/expressions/) の一覧が記載されています。フィルターが提供されない場合、ソース（ベクタータイルセットの場合はソースレイヤー）の全てのフィーチャーが表示されます。
+     * @param {Object} [layer.paint] (オプション) スタイルレイヤーのペイントプロパティ。
+     * 利用可能なペイントプロパティは `layer.type` によって異なります。
+     * 各レイヤタイプのペイントプロパティの一覧は、[MapLibre Style Specification](/style-spec/layers/)で見ることができます。
+     * ペイントプロパティが指定されない場合、デフォルト値が使用されます。
+     * @param {Object} [layer.layout] (オプション) レイヤーのレイアウトプロパティ。利用可能なレイアウトプロパティは `layer.type` によって異なります。
+     * それぞれのレイヤータイプのレイアウトプロパティの一覧は、[MapLibre Style Specification](/style-spec/layers/) で見ることができます。
+     * レイアウトプロパティが指定されない場合、デフォルト値が使用されます。
+     * @param {number} [layer.maxzoom] (オプション) レイヤーの最大ズームレベル。maxzoomと同じかそれ以上のズームレベルでは、レイヤーは非表示になります。この値は `0` から `24` (この値を含む) までの任意の値を指定することができます。
+     * maxzoom を指定しない場合、タイルが存在するすべてのズームレベルでレイヤーが表示されます。
+     * @param {number} [layer.minzoom] (オプション) レイヤーの最小ズームレベル。minzoomより小さいズームレベルでは、レイヤーは非表示になります。この値は `0` から `24` (この値を含む) までの任意の値を指定することができます。
+     * minzoom を指定しない場合、タイルが存在するすべてのズームレベルでレイヤーが表示されます。
+     * @param {Object} [layer.metadata] (オプション) レイヤーを管理するのに便利な任意のプロパティですが、レンダリングには影響しません。
+     * @param {string} [layer.renderingMode] これは `custom` タイプを持つレイヤーにのみ適用されます。詳しくは {@link CustomLayerInterface} をご覧ください。
+     * @param {string} [beforeId] 新規レイヤーを既存のレイヤーの直前に追加し、視覚的に新規レイヤーが既存のレイヤーの下に表示されるように指定するための既存レイヤーの ID。
+     * この引数を指定しない場合、新規レイヤーはレイヤー配列の末尾に追加され、他のすべてのレイヤーの上に表示されます。
      *
      * @returns {Map} `this`
      *
      * @example
-     * // Add a circle layer with a vector source
+     * // vector ソースの circle レイヤーを追加する
      * map.addLayer({
      *   id: 'points-of-interest',
      *   source: {
      *     type: 'vector',
-     *     url: 'https://demotiles.maplibre.org/tiles/tiles.json'
+     *     url: 'https://tileserver.geolonia.com/embed-simple-vector-sample/tiles.json'
      *   },
      *   'source-layer': 'poi_label',
      *   type: 'circle',
      *   paint: {
-     *     // MapLibre Style Specification paint properties
+     *     // MapLibre Style Specification の paint プロパティ
      *   },
      *   layout: {
-     *     // MapLibre Style Specification layout properties
+     *     // MapLibre Style Specification layout プロパティ
      *   }
      * });
      *
      * @example
-     * // Define a source before using it to create a new layer
+     * // 新しいレイヤーを作成する前に、ソースを追加する
      * map.addSource('state-data', {
      *   type: 'geojson',
      *   data: 'path/to/data.geojson'
@@ -2340,35 +2337,33 @@ class Map extends Camera {
      *
      * map.addLayer({
      *   id: 'states',
-     *   // References the GeoJSON source defined above
-     *   // and does not require a `source-layer`
+     *   // 上記で定義した GeoJSON ソースを参照する。
+     *   // GeoJSON ソースは、`source-layer` を必要としません。
      *   source: 'state-data',
      *   type: 'symbol',
      *   layout: {
-     *     // Set the label content to the
-     *     // feature's `name` property
+     *     // ラベルの内容を、そのフィーチャーの `name` プロパティに設定します。
      *     text-field: ['get', 'name']
      *   }
      * });
      *
      * @example
-     * // Add a new symbol layer before an existing layer
+     * // 既存のレイヤーの直前に新しいシンボルレイヤーを追加します。
      * map.addLayer({
      *   id: 'states',
-     *   // References a source that's already been defined
+     *   // 既に定義されているソースを参照します。
      *   source: 'state-data',
      *   type: 'symbol',
      *   layout: {
-     *     // Set the label content to the
-     *     // feature's `name` property
+     *     // ラベルの内容を、そのフィーチャーの `name` プロパティに設定します。
      *     text-field: ['get', 'name']
      *   }
-     * // Add the layer before the existing `cities` layer
+     * // 既存の `cities` レイヤーの直前にレイヤーを追加します。
      * }, 'cities');
      *
-     * @see [Create and style clusters](https://maplibre.org/maplibre-gl-js-docs/example/cluster/)
-     * @see [Add a vector tile source](https://maplibre.org/maplibre-gl-js-docs/example/vector-source/)
-     * @see [Add a WMS source](https://maplibre.org/maplibre-gl-js-docs/example/wms/)
+     * @see [クラスターの作成とスタイル](https://maplibre.org/maplibre-gl-js-docs/example/cluster/)
+     * @see [ベクトルタイルのソースを追加](https://maplibre.org/maplibre-gl-js-docs/example/vector-source/)
+     * @see [WMSソースの追加](https://maplibre.org/maplibre-gl-js-docs/example/wms/)
      */
     addLayer(layer: (LayerSpecification & {source?: string | SourceSpecification}) | CustomLayerInterface, beforeId?: string) {
         this._lazyInitEmptyStyle();
