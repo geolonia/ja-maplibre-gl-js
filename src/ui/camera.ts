@@ -792,15 +792,24 @@ abstract class Camera extends Evented {
         return this.fire(new Event('moveend', eventData));
     }
 
+    // /**
+    //  * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
+    //  * and returns them as Cameraoptions.
+    //  * @memberof Map#
+    //  * @param from The camera to look from
+    //  * @param altitudeFrom The altitude of the camera to look from
+    //  * @param to The center to look at
+    //  * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
+    //  * @returns {CameraOptions} the calculated camera options
+    //  */
     /**
-     * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
-     * and returns them as Cameraoptions.
+     * カメラ位置を@param newCenterとして，@param newCenterを見るためのピッチ，ズーム，方位を計算し，Cameraoptionsとして返します．
      * @memberof Map#
-     * @param from The camera to look from
-     * @param altitudeFrom The altitude of the camera to look from
-     * @param to The center to look at
-     * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
-     * @returns {CameraOptions} the calculated camera options
+     * @param from カメラの位置
+     * @param altitudeFrom カメラの高度
+     * @param to 見るべき対象の中心位置
+     * @param altitudeTo オプションで、見るべき中心の高度を指定します。何も指定しない場合は地上高が使用されます。
+     * @returns {CameraOptions} 計算されたカメラオプション
      */
     calculateCameraOptionsFromTo(from: LngLat, altitudeFrom: number, to: LngLat, altitudeTo: number = 0) : CameraOptions {
         const fromMerc = MercatorCoordinate.fromLngLat(from, altitudeFrom);
@@ -827,19 +836,42 @@ abstract class Camera extends Evented {
         };
     }
 
+    // /**
+    //  * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
+    //  * between old and new values. The map will retain its current values for any
+    //  * details not specified in `options`.
+    //  *
+    //  * Note: The transition will happen instantly if the user has enabled
+    //  * the `reduced motion` accesibility feature enabled in their operating system,
+    //  * unless `options` includes `essential: true`.
+    //  *
+    //  * @memberof Map#
+    //  * @param options Options describing the destination and animation of the transition.
+    //  *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires zoomstart
+    //  * @fires pitchstart
+    //  * @fires rotate
+    //  * @fires move
+    //  * @fires zoom
+    //  * @fires pitch
+    //  * @fires moveend
+    //  * @fires zoomend
+    //  * @fires pitchend
+    //  * @returns {Map} `this`
+    //  * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+    //  */
     /**
-     * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
-     * between old and new values. The map will retain its current values for any
-     * details not specified in `options`.
+     * `center`, `zoom`, `bearing`, `pitch`, `padding` の任意の組み合わせを、古い値と新しい値の間をアニメーションで遷移しながら変更します。
+     * マップは `options` で指定されていない詳細については、現在の値を保持します。
      *
-     * Note: The transition will happen instantly if the user has enabled
-     * the `reduced motion` accesibility feature enabled in their operating system,
-     * unless `options` includes `essential: true`.
+     * 注意: ユーザーがオペレーティングシステムで `reduced motion` アクセシビリティ機能を有効にしている場合、
+     * `options` に `essential: true` が含まれていなければ、移行は即座に行われます。
      *
      * @memberof Map#
-     * @param options Options describing the destination and animation of the transition.
-     *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param options 遷移先とアニメーションを指定するオプションです。{@link CameraOptions}と{@link AnimationOptions}を受け付けます。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -851,7 +883,7 @@ abstract class Camera extends Evented {
      * @fires zoomend
      * @fires pitchend
      * @returns {Map} `this`
-     * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+     * @see [ゲーム感覚の操作でマップを移動](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
      */
     easeTo(options: EaseToOptions & {
         easeId?: string;
