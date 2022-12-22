@@ -426,9 +426,13 @@ class Map extends Camera {
      */
     scrollZoom: ScrollZoomHandler;
 
+    // /**
+    //  * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
+    //  * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
+    //  */
     /**
-     * The map's {@link BoxZoomHandler}, which implements zooming using a drag gesture with the Shift key pressed.
-     * Find more details and examples using `boxZoom` in the {@link BoxZoomHandler} section.
+     * このハンドラは、Shiftキーを押しながらドラッグするジェスチャーを使用してズームを実装しています。
+     * `boxZoom` の詳細と使用例は {@link BoxZoomHandler} のセクションを参照してください。
      */
     boxZoom: BoxZoomHandler;
 

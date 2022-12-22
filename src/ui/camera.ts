@@ -792,15 +792,24 @@ abstract class Camera extends Evented {
         return this.fire(new Event('moveend', eventData));
     }
 
+    // /**
+    //  * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
+    //  * and returns them as Cameraoptions.
+    //  * @memberof Map#
+    //  * @param from The camera to look from
+    //  * @param altitudeFrom The altitude of the camera to look from
+    //  * @param to The center to look at
+    //  * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
+    //  * @returns {CameraOptions} the calculated camera options
+    //  */
     /**
-     * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
-     * and returns them as Cameraoptions.
+     * カメラ位置を@param newCenterとして，@param newCenterを見るためのピッチ，ズーム，方位を計算し，Cameraoptionsとして返します．
      * @memberof Map#
-     * @param from The camera to look from
-     * @param altitudeFrom The altitude of the camera to look from
-     * @param to The center to look at
-     * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
-     * @returns {CameraOptions} the calculated camera options
+     * @param from カメラの位置
+     * @param altitudeFrom カメラの高度
+     * @param to 見るべき対象の中心位置
+     * @param altitudeTo オプションで、見るべき中心の高度を指定します。何も指定しない場合は地上高が使用されます。
+     * @returns {CameraOptions} 計算されたカメラオプション
      */
     calculateCameraOptionsFromTo(from: LngLat, altitudeFrom: number, to: LngLat, altitudeTo: number = 0) : CameraOptions {
         const fromMerc = MercatorCoordinate.fromLngLat(from, altitudeFrom);
