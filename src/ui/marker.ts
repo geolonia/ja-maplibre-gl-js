@@ -25,33 +25,61 @@ type MarkerOptions = {
     pitchAlignment?: string;
 };
 
+// /**
+//  * Creates a marker component
+//  * @param {Object} [options]
+//  * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
+//  * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
+//  *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
+//  * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+//  * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
+//  * @param {number} [options.scale=1] The scale to use for the default marker if options.element is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
+//  * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
+//  * @param {number} [options.clickTolerance=0] The max number of pixels a user can shift the mouse pointer during a click on the marker for it to be considered a valid click (as opposed to a marker drag). The default is to inherit map's clickTolerance.
+//  * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
+//  * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
+//  * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
+//  * @example
+//  * var marker = new maplibregl.Marker()
+//  *   .setLngLat([30.5, 50.5])
+//  *   .addTo(map);
+//  * @example
+//  * // Set options
+//  * var marker = new maplibregl.Marker({
+//  *     color: "#FFFFFF",
+//  *     draggable: true
+//  *   }).setLngLat([30.5, 50.5])
+//  *   .addTo(map);
+//  * @see [Add custom icons with Markers](https://maplibre.org/maplibre-gl-js-docs/example/custom-marker-icons/)
+//  * @see [Create a draggable Marker](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-marker/)
+//  */
 /**
- * Creates a marker component
+ * マーカーコンポーネントを作成します
  * @param {Object} [options]
- * @param {HTMLElement} [options.element] DOM element to use as a marker. The default is a light blue, droplet-shaped SVG marker.
- * @param {string} [options.anchor='center'] A string indicating the part of the Marker that should be positioned closest to the coordinate set via {@link Marker#setLngLat}.
- *   Options are `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, and `'bottom-right'`.
- * @param {PointLike} [options.offset] The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
- * @param {string} [options.color='#3FB1CE'] The color to use for the default marker if options.element is not provided. The default is light blue.
- * @param {number} [options.scale=1] The scale to use for the default marker if options.element is not provided. The default scale corresponds to a height of `41px` and a width of `27px`.
- * @param {boolean} [options.draggable=false] A boolean indicating whether or not a marker is able to be dragged to a new position on the map.
- * @param {number} [options.clickTolerance=0] The max number of pixels a user can shift the mouse pointer during a click on the marker for it to be considered a valid click (as opposed to a marker drag). The default is to inherit map's clickTolerance.
- * @param {number} [options.rotation=0] The rotation angle of the marker in degrees, relative to its respective `rotationAlignment` setting. A positive value will rotate the marker clockwise.
- * @param {string} [options.pitchAlignment='auto'] `map` aligns the `Marker` to the plane of the map. `viewport` aligns the `Marker` to the plane of the viewport. `auto` automatically matches the value of `rotationAlignment`.
- * @param {string} [options.rotationAlignment='auto'] `map` aligns the `Marker`'s rotation relative to the map, maintaining a bearing as the map rotates. `viewport` aligns the `Marker`'s rotation relative to the viewport, agnostic to map rotations. `auto` is equivalent to `viewport`.
+ * @param {HTMLElement} [options.element] マーカーとして使用する DOM 要素。デフォルトは赤色ピン型の SVG マーカーです。
+ * @param {string} [options.anchor='center'] {@link Marker#setLngLat} で指定された座標に最も近い位置に配置されるべきMarkerの箇所を示す文字列です。
+ * オプションは `'center'`, `'top'`, `'bottom'`, `'left'`, `'right'`, `'top-left'`, `'top-right'`, `'bottom-left'`, および `'bottom-right'` です。
+ * @param {PointLike} [options.offset] 要素の中心から相対的に適用される {@link PointLike} オブジェクトとしてのピクセル単位のオフセットです。マイナスの値はは左と上を意味 します。
+ * @param {string} [options.color='#E4402F'] options.element を指定しなかった場合に、デフォルトのマーカーに使用する色。デフォルトは朱色です。
+ * @param {number} [options.scale=1] options.element が提供されていない場合に、デフォルトマーカーに使用するスケールです。デフォルトのスケールは、高さ `41px` 、幅 `27px` に相当します。
+ * @param {boolean} [options.draggable=false] マーカーをドラッグしてマップ上の新しい位置に移動できるかどうかを示す真偽値です。
+ * @param {number} [options.clickTolerance=0] マーカーをクリックする際に、ユーザーがマウスポインターを動かしても有効なクリックとみなされる最大ピクセル数 (マーカーのドラッグとは異なります) を指定します。デフォルトでは、map の clickTolerance を継承します。
+ * @param {number} [options.rotation=0] マーカーの回転角度を度単位で指定します。この角度は、`rotationAlignment` 設定に対して相対的です。正の値を指定すると、マーカーを時計回りに回転させることができます。
+ * @param {string} [options.pitchAlignment='auto'] 地図を傾けた時に、`map` を指定すると `Marker` をマップの平面に沿って配置します。viewport` は `Marker` をビューポートの平面に沿って配置します。auto` は自動的に `rotationAlignment` の値と一致します。
+ * @param {string} [options.rotationAlignment='auto'] `map` は `Marker` の回転をマップに合わせます。マップが回転すると、マーカーの向きも変わります。`viewport` は `Marker` の回転をビューポートに合わせます。マーカーの向きはマップの回転に関係なく一定です。`auto` は `viewport` と同じです。
  * @example
- * var marker = new maplibregl.Marker()
+ * var marker = new geolonia.Marker()
  *   .setLngLat([30.5, 50.5])
  *   .addTo(map);
  * @example
  * // Set options
- * var marker = new maplibregl.Marker({
+ * var marker = new geolonia.Marker({
  *     color: "#FFFFFF",
  *     draggable: true
  *   }).setLngLat([30.5, 50.5])
  *   .addTo(map);
- * @see [Add custom icons with Markers](https://maplibre.org/maplibre-gl-js-docs/example/custom-marker-icons/)
- * @see [Create a draggable Marker](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-marker/)
+ * @see [カスタムアイコンを使ったマーカーを追加します](https://maplibre.org/maplibre-gl-js-docs/example/custom-marker-icons/)
+ * @see [ドラッグ可能なマーカーを追加します](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-marker/)
  */
 export default class Marker extends Evented {
     _map: Map;
