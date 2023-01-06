@@ -65,7 +65,7 @@ type MarkerOptions = {
  * @param {boolean} [options.draggable=false] マーカーをドラッグしてマップ上の新しい位置に移動できるかどうかを示す真偽値です。
  * @param {number} [options.clickTolerance=0] マーカーをクリックする際に、ユーザーがマウスポインターを動かしても有効なクリックとみなされる最大ピクセル数 (マーカーのドラッグとは異なります) を指定します。デフォルトでは、map の clickTolerance を継承します。
  * @param {number} [options.rotation=0] マーカーの回転角度を度単位で指定します。この角度は、`rotationAlignment` 設定に対して相対的です。正の値を指定すると、マーカーを時計回りに回転させることができます。
- * @param {string} [options.pitchAlignment='auto'] 地図を傾けた時に、`map` を指定すると `Marker` をマップの平面に沿って配置します。viewport` は `Marker` をビューポートの平面に沿って配置します。auto` は自動的に `rotationAlignment` の値と一致します。
+ * @param {string} [options.pitchAlignment='auto'] 地図を傾けた時に、`map` を指定すると `Marker` をマップの平面に沿って配置します。`viewport` は `Marker` をビューポートの平面に沿って配置します。`auto` は自動的に `rotationAlignment` の値と一致します。
  * @param {string} [options.rotationAlignment='auto'] `map` は `Marker` の回転をマップに合わせます。マップが回転すると、マーカーの向きも変わります。`viewport` は `Marker` の回転をビューポートに合わせます。マーカーの向きはマップの回転に関係なく一定です。`auto` は `viewport` と同じです。
  * @example
  * var marker = new geolonia.Marker()
