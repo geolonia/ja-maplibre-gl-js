@@ -503,18 +503,33 @@ abstract class Camera extends Evented {
         return this;
     }
 
+    // /**
+    //  * @memberof Map#
+    //  * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
+    //  *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
+    //  *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
+    //  * @param options Options object
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
+    //  * @returns {CenterZoomBearing} If map is able to fit to provided bounds, returns `center`, `zoom`, and `bearing`.
+    //  *      If map is unable to fit, method will warn and return undefined.
+    //  * @example
+    //  * var bbox = [[-79, 43], [-73, 45]];
+    //  * var newCameraTransform = map.cameraForBounds(bbox, {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  */
     /**
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
-     *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
-     *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
-     * @param options Options object
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
-     * @returns {CenterZoomBearing} If map is able to fit to provided bounds, returns `center`, `zoom`, and `bearing`.
-     *      If map is unable to fit, method will warn and return undefined.
+     * @param {LngLatBoundsLike} bounds ビューポートにおける指定された領域の中心を計算し、ビューポートに収まる `Map#getMaxZoom()` までの最大のズームレベルを使用します。LngLatBounds は、常に北が上に来るように位置合わせされたボックスを表します。
+     * @param options オプションオブジェクト
+     * @param {number | PaddingOptions} [options.padding] 与えられた領域に追加する、ピクセルで指定するパディング。
+     * @param {number} [options.bearing=0] アニメーション終了時の方位（度数）を指定します。
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心（地図の中心に対して相対的な位置）をピクセル単位で指定します。
+     * @param {number} [options.maxZoom] カメラが指定された範囲に移動する時に許可する最大ズームレベル。
+     * @returns {CenterZoomBearing} マップが指定した範囲に収まる場合は、 `center`, `zoom`, `bearing` を返します。マップが範囲に収まらない場合は、警告が表示され、undefined を返します。
      * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * var newCameraTransform = map.cameraForBounds(bbox, {
