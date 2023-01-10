@@ -436,16 +436,23 @@ class Map extends Camera {
      */
     boxZoom: BoxZoomHandler;
 
+    // /**
+    //  * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
+    //  * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
+    //  * in the {@link DragRotateHandler} section.
+    //  */
     /**
-     * The map's {@link DragRotateHandler}, which implements rotating the map while dragging with the right
-     * mouse button or with the Control key pressed. Find more details and examples using `dragRotate`
-     * in the {@link DragRotateHandler} section.
+     * マップの {@link DragRotateHandler} は、マウスの右ボタンまたは Control キーを押しながらドラッグしている間、マップを回転させる機能を提供します。
+     * 詳細と `dragRotate` を使用した例は {@link DragRotateHandler} のセクションを参照してください。
      */
     dragRotate: DragRotateHandler;
 
+    // /**
+    //  * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
+    //  * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
+    //  */
     /**
-     * The map's {@link DragPanHandler}, which implements dragging the map with a mouse or touch gesture.
-     * Find more details and examples using `dragPan` in the {@link DragPanHandler} section.
+     * マップの {@link DragPanHandler}。マウスやタッチジェスチャーでマップをドラッグする機能を提供します。詳細と `dragPan` の使用例は、{@link DragPanHandler} セクションを参照してください。
      */
     dragPan: DragPanHandler;
 
@@ -455,9 +462,12 @@ class Map extends Camera {
      */
     keyboard: KeyboardHandler;
 
+    // /**
+    //  * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
+    //  * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
+    //  */
     /**
-     * The map's {@link DoubleClickZoomHandler}, which allows the user to zoom by double clicking.
-     * Find more details and examples using `doubleClickZoom` in the {@link DoubleClickZoomHandler} section.
+     * 地図の {@link DoubleClickZoomHandler}。ダブルクリックでズームすることができます。{@link DoubleClickZoomHandler} のセクションで `doubleClickZoom` を使用した詳細と例をご覧ください。
      */
     doubleClickZoom: DoubleClickZoomHandler;
 
