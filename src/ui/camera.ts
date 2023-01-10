@@ -634,22 +634,45 @@ abstract class Camera extends Evented {
         };
     }
 
+    // /**
+    //  * Pans and zooms the map to contain its visible area within the specified geographical bounds.
+    //  * This function will also reset the map's bearing to 0 if bearing is nonzero.
+    //  *
+    //  * @memberof Map#
+    //  * @param bounds Center these bounds in the viewport and use the highest
+    //  *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+    //  * @param {FitBoundsOptions} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {boolean} [options.linear=false] If `true`, the map transitions using
+    //  *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+    //  *     those functions and {@link AnimationOptions} for information about options available.
+    //  * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+    //  * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires moveend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * var bbox = [[-79, 43], [-73, 45]];
+    //  * map.fitBounds(bbox, {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  * @see [Fit a map to a bounding box](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
+    //  */
     /**
-     * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     * This function will also reset the map's bearing to 0 if bearing is nonzero.
+     * 指定された座標範囲に合わせて地図をパンおよびズームします。 この関数は、方位が0でない場合、地図の方位を0にリセットします。
      *
      * @memberof Map#
-     * @param bounds Center these bounds in the viewport and use the highest
-     *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {FitBoundsOptions} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     *     those functions and {@link AnimationOptions} for information about options available.
-     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+     * @param bounds これらの境界をビューポートの中央に配置し、その境界がビューポートに収まる最高レベルのズーム（`Map#getMaxZoom()` を含む）を使用します。
+     * @param {FitBoundsOptions} [options] Optionsは、以下の項目に加えて、{@link AnimationOptions} と {@link CameraOptions} の全てのプロパティをサポートしています。
+     * @param {number | PaddingOptions} [options.padding] 与えられた領域に追加されるパディングの量をピクセルで指定します。
+     * @param {boolean} [options.linear=false] `true` の場合、{@link Map#easeTo} を使ってマップを遷移させます。`false` の場合、マップは {@link Map#flyTo} を使って遷移します。
+     * 利用可能なオプションについては、これらの関数と {@link AnimationOptions} を参照してください。
+     * @param {Function} [options.easing] アニメーション遷移のためのイージング関数。詳細は {@link AnimationOptions} を参照してください。
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心を、地図の中心から相対的に、ピクセルで指定してください。
+     * @param {number} [options.maxZoom] 地図表示が指定された範囲に遷移する際に許容する最大ズームレベル。
+     * @param {Object} [eventData] このメソッドによって発火するイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -658,7 +681,7 @@ abstract class Camera extends Evented {
      * map.fitBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
-     * @see [Fit a map to a bounding box](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
+     * @see [地図をバウンディングボックスに合わせます](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: FitBoundsOptions, eventData?: any) {
         return this._fitInternal(
