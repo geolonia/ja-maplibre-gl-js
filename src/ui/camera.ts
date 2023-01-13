@@ -690,24 +690,51 @@ abstract class Camera extends Evented {
             eventData);
     }
 
+    // /**
+    //  * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
+    //  * once the map is rotated to the specified bearing. To zoom without rotating,
+    //  * pass in the current map bearing.
+    //  *
+    //  * @memberof Map#
+    //  * @param p0 First point on screen, in pixel coordinates
+    //  * @param p1 Second point on screen, in pixel coordinates
+    //  * @param bearing Desired map bearing at end of animation, in degrees
+    //  * @param options Options object
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {boolean} [options.linear=false] If `true`, the map transitions using
+    //  *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+    //  *     those functions and {@link AnimationOptions} for information about options available.
+    //  * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires moveend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * var p0 = [220, 400];
+    //  * var p1 = [500, 900];
+    //  * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  * @see Used by {@link BoxZoomHandler}
+    //  */
     /**
-     * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
-     * once the map is rotated to the specified bearing. To zoom without rotating,
-     * pass in the current map bearing.
+     * 地図を指定された方位に回転させ、点 p0 と p1 で作られる枠に合うように、パン、回転、ズームを行います。
+     * 回転させずにズームするには、現在の地図のベアリングを渡して下さい。
      *
      * @memberof Map#
-     * @param p0 First point on screen, in pixel coordinates
-     * @param p1 Second point on screen, in pixel coordinates
-     * @param bearing Desired map bearing at end of animation, in degrees
-     * @param options Options object
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     *     those functions and {@link AnimationOptions} for information about options available.
-     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param p0 画面上の最初の点（ピクセル座標）
+     * @param p1 画面上の2つ目の点（ピクセル座標）
+     * @param bearing アニメーション終了時の地図の方位（度数）
+     * @param options オプションオブジェクト
+     * @param {number | PaddingOptions} [options.padding] 与えられた境界線に追加されるパディングの量をピクセル単位で指定します。
+     * @param {boolean} [options.linear=false] `true` の場合、{@link Map#easeTo} を使ってマップを遷移させます。`false` の場合、マップは {@link Map#flyTo} を使って遷移します。
+     * 利用可能なオプションについては、これらの関数と {@link AnimationOptions} を参照してください。
+     * @param {Function} [options.easing] アニメーション遷移のためのイージング関数。参照：{@link AnimationOptions}.
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心（地図の中心に対して相対的な位置）をピクセル単位で指定します。
+     * @param {number} [options.maxZoom] 地図画面が指定された範囲に遷移する際に許可する最大ズームレベル。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
