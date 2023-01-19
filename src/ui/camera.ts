@@ -1131,37 +1131,89 @@ abstract class Camera extends Evented {
         this.fire(new Event('moveend', eventData));
     }
 
+    // /**
+    //  * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
+    //  * evokes flight. The animation seamlessly incorporates zooming and panning to help
+    //  * the user maintain her bearings even after traversing a great distance.
+    //  *
+    //  * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
+    //  * if the user has the `reduced motion` accesibility feature enabled in their operating system,
+    //  * unless 'options' includes `essential: true`.
+    //  *
+    //  * @memberof Map#
+    //  * @param {FlyToOptions} options Options describing the destination and animation of the transition.
+    //  *     Accepts {@link CameraOptions}, {@link AnimationOptions},
+    //  *     and the following additional options.
+    //  * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
+    //  *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+    //  *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
+    //  *     value selected by participants in the user study discussed in
+    //  *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+    //  *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+    //  *     value of 1 would produce a circular motion.
+    //  * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
+    //  *     `options.curve` is specified, this option is ignored.
+    //  * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
+    //  *     `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
+    //  *     by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
+    //  *     It does not correspond to a fixed physical distance, but varies by zoom level.
+    //  * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
+    //  *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
+    //  * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
+    //  *     If duration exceeds maximum duration, it resets to 0.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires zoomstart
+    //  * @fires pitchstart
+    //  * @fires move
+    //  * @fires zoom
+    //  * @fires rotate
+    //  * @fires pitch
+    //  * @fires moveend
+    //  * @fires zoomend
+    //  * @fires pitchend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * // fly with default options to null island
+    //  * map.flyTo({center: [0, 0], zoom: 9});
+    //  * // using flyTo options
+    //  * map.flyTo({
+    //  *   center: [0, 0],
+    //  *   zoom: 9,
+    //  *   speed: 0.2,
+    //  *   curve: 1,
+    //  *   easing(t) {
+    //  *     return t;
+    //  *   }
+    //  * });
+    //  * @see [Fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
+    //  * @see [Slowly fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
+    //  * @see [Fly to a location based on scroll position](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
+    //  */
     /**
-     * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
-     * evokes flight. The animation seamlessly incorporates zooming and panning to help
-     * the user maintain her bearings even after traversing a great distance.
+     * センター、ズーム、ベアリング、ピッチの組み合わせを自由に変更し、飛行をイメージさせるカーブに沿って遷移するアニメーションを実現します。
+     * また、ズームとパンをシームレスに組み合わせたアニメーションにより、長距離を移動しても方位を維持しやすくなっています。
      *
-     * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
-     * if the user has the `reduced motion` accesibility feature enabled in their operating system,
-     * unless 'options' includes `essential: true`.
+     * 注意: ユーザーのオペレーティングシステムで `reduced motion` アクセシビリティ機能が有効になっている場合、
+     * 'options' に `essential: true` が含まれていないとアニメーションがスキップされ、`jumpTo` と同等の動作になります。
      *
      * @memberof Map#
-     * @param {FlyToOptions} options Options describing the destination and animation of the transition.
-     *     Accepts {@link CameraOptions}, {@link AnimationOptions},
-     *     and the following additional options.
-     * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
-     *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
-     *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
-     *     value selected by participants in the user study discussed in
-     *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
-     *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
-     *     value of 1 would produce a circular motion.
-     * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
-     *     `options.curve` is specified, this option is ignored.
-     * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
-     *     `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
-     *     by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
-     *     It does not correspond to a fixed physical distance, but varies by zoom level.
-     * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
-     *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
-     *     If duration exceeds maximum duration, it resets to 0.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {FlyToOptions} options 遷移先とアニメーションを記述するオプションです。
+     * {@link CameraOptions}、{@link AnimationOptions}、および以下の追加オプションを受け付けます。
+     * @param {number} [options.curve=1.42] 飛行経路に沿って発生するズームの「カーブ」です。
+     * 高い値はズームを最大にして誇張されたアニメーションを作り、低い値はズームを最小にして{@link Map#easeTo}に近い効果を生み出します。
+     * 1.42は[van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf)で論じたユーザー調査の参加者が選んだ平均値です。
+     * `Math.pow(6, 0.25)`の値は、二乗平均平方根の平均速度と同等です。1の値は円運動になります。
+     * @param {number} [options.minZoom] 飛行経路のピーク時のゼロ基準のズームレベル。
+     * `option.curve` が指定されている場合、このオプションは無視されます。
+     * @param {number} [options.speed=1.2] アニメーションの平均速度で、`options.curve`との関連で定義されます。
+     * 速度が1.2であれば、マップは毎秒1.2倍の `options.curve` 画面いっぱいに飛行経路に沿って移動しているように見えるということです。
+     * _screenful_ はマップの可視範囲です。これは物理的な固定距離ではなく、ズームレベルによって変化します。
+     * @param {number} [options.screenSpeed] 線形タイミングカーブを仮定して、アニメーションの平均速度を1秒あたりのスクリーンフルで測定します。
+     * もし `options.speed` が指定された場合、このオプションは無視されます。
+     * @param {number} [options.maxDuration] アニメーションの最大継続時間をミリ秒単位で指定します。
+     * 継続時間が最大継続時間を超えると、0にリセットされます。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -1174,9 +1226,9 @@ abstract class Camera extends Evented {
      * @fires pitchend
      * @returns {Map} `this`
      * @example
-     * // fly with default options to null island
+     * // デフォルトのオプションでNULL島に飛びます。
      * map.flyTo({center: [0, 0], zoom: 9});
-     * // using flyTo options
+     * // flyTo オプションを使用します。
      * map.flyTo({
      *   center: [0, 0],
      *   zoom: 9,
@@ -1186,9 +1238,9 @@ abstract class Camera extends Evented {
      *     return t;
      *   }
      * });
-     * @see [Fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
-     * @see [Slowly fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
-     * @see [Fly to a location based on scroll position](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
+     * @see [目的地まで飛びます](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
+     * @see [ゆっくり目的地まで飛びます](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
+     * @see [スクロールの位置をもとに、その場所へ飛びます](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
      */
     flyTo(options: FlyToOptions, eventData?: any) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
