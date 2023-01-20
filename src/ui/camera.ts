@@ -350,13 +350,21 @@ abstract class Camera extends Evented {
         return this;
     }
 
+    // /**
+    //  * Returns the map's current bearing. The bearing is the compass direction that is "up"; for example, a bearing
+    //  * of 90° orients the map so that east is up.
+    //  *
+    //  * @memberof Map#
+    //  * @returns The map's current bearing.
+    //  * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+    //  */
     /**
-     * Returns the map's current bearing. The bearing is the compass direction that is "up"; for example, a bearing
-     * of 90° orients the map so that east is up.
+     * ベアリング関数は、マップの現在の方位を返します。方位はコンパスの「上」の方向です。
+     * 例えば、90°の方位は、東が上になるように地図を配置します。
      *
      * @memberof Map#
-     * @returns The map's current bearing.
-     * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+     * @returns 地図の現在の方位。
+     * @see [ゲームの様な操作でマップを移動します](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
 
