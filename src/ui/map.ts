@@ -789,10 +789,17 @@ class Map extends Camera {
         this.painter.resize(width, height, pixelRatio);
     }
 
+    // /**
+    //  * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
+    //  * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
+    //  * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
+    //  * @example
+    //  * var bounds = map.getBounds();
+    //  */
     /**
-     * Returns the map's geographical bounds. When the bearing or pitch is non-zero, the visible region is not
-     * an axis-aligned rectangle, and the result is the smallest bounds that encompasses the visible region.
-     * @returns {LngLatBounds} The geographical bounds of the map as {@link LngLatBounds}.
+     * 地図の地理的範囲を取得します。方位またはピッチが0でない場合、可視領域は座標軸方向に沿った長方形ではなく、
+     * 可視領域を含む最小範囲の境界が結果として返されます。
+     * @returns {LngLatBounds} 地図の地理的境界を{@link LngLatBounds}で指定します。
      * @example
      * var bounds = map.getBounds();
      */
