@@ -2750,13 +2750,21 @@ class Map extends Camera {
         return this._canvasContainer;
     }
 
+    // /**
+    //  * Returns the map's `<canvas>` element.
+    //  *
+    //  * @returns {HTMLCanvasElement} The map's `<canvas>` element.
+    //  * @see [Measure distances](https://maplibre.org/maplibre-gl-js-docs/example/measure/)
+    //  * @see [Display a popup on hover](https://maplibre.org/maplibre-gl-js-docs/example/popup-on-hover/)
+    //  * @see [Center the map on a clicked symbol](https://maplibre.org/maplibre-gl-js-docs/example/center-on-symbol/)
+    //  */
     /**
-     * Returns the map's `<canvas>` element.
+     * マップの `<canvas>` 要素を返します。
      *
-     * @returns {HTMLCanvasElement} The map's `<canvas>` element.
-     * @see [Measure distances](https://maplibre.org/maplibre-gl-js-docs/example/measure/)
-     * @see [Display a popup on hover](https://maplibre.org/maplibre-gl-js-docs/example/popup-on-hover/)
-     * @see [Center the map on a clicked symbol](https://maplibre.org/maplibre-gl-js-docs/example/center-on-symbol/)
+     * @returns {HTMLCanvasElement} マップの `<canvas>` 要素。
+     * @see [距離の測定](https://maplibre.org/maplibre-gl-js-docs/example/measure/)
+     * @see [ホバー時にポップアップを表示する](https://maplibre.org/maplibre-gl-js-docs/example/popup-on-hover/)
+     * @see [クリックしたシンボルを地図の中心に配置](https://maplibre.org/maplibre-gl-js-docs/example/center-on-symbol/)
      */
     getCanvas() {
         return this._canvas;
@@ -3315,11 +3323,16 @@ class Map extends Camera {
         return version;
     }
 
+    // /**
+    //  * Returns the elevation for the point where the camera is looking.
+    //  * This value corresponds to:
+    //  * "meters above sea level" * "exaggeration"
+    //  * @returns {number} * The elevation.
+    //  */
     /**
-     * Returns the elevation for the point where the camera is looking.
-     * This value corresponds to:
-     * "meters above sea level" * "exaggeration"
-     * @returns {number} * The elevation.
+     * カメラが見ている地点の標高を返します。
+     * この値は、以下に相当します。"海抜メートル" * "exaggeration"
+     * @returns {number} * 標高
      */
     getCameraTargetElevation(): number {
         return this.transform.elevation;
