@@ -139,6 +139,11 @@ class CanvasSource extends ImageSource {
         this._finishLoading();
     }
 
+    // /**
+    //  * Returns the HTML `canvas` element.
+    //  *
+    //  * @returns {HTMLCanvasElement} The HTML `canvas` element.
+    //  */
     /**
      * Returns the HTML `canvas` element.
      *
