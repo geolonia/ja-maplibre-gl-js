@@ -2734,17 +2734,28 @@ class Map extends Camera {
         return this._container;
     }
 
+    // /**
+    //  * Returns the HTML element containing the map's `<canvas>` element.
+    //  *
+    //  * If you want to add non-GL overlays to the map, you should append them to this element.
+    //  *
+    //  * This is the element to which event bindings for map interactivity (such as panning and zooming) are
+    //  * attached. It will receive bubbled events from child elements such as the `<canvas>`, but not from
+    //  * map controls.
+    //  *
+    //  * @returns {HTMLElement} The container of the map's `<canvas>`.
+    //  * @see [Create a draggable point](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-point/)
+    //  */
     /**
-     * Returns the HTML element containing the map's `<canvas>` element.
+     * マップの `<canvas>` 要素を含む HTML 要素を返します。
      *
-     * If you want to add non-GL overlays to the map, you should append them to this element.
+     * 地図にGL以外のオーバーレイを追加したい場合は、この要素に追加する必要があります。
      *
-     * This is the element to which event bindings for map interactivity (such as panning and zooming) are
-     * attached. It will receive bubbled events from child elements such as the `<canvas>`, but not from
-     * map controls.
+     * マップのインタラクティブ性（パンやズームなど）のためのイベントバインディングがアタッチされる要素です。
+     * これは `<canvas>` のような子要素からのバブルイベントを受け取りますが、マップコントロールからのバブルイベントは受け取れません。
      *
-     * @returns {HTMLElement} The container of the map's `<canvas>`.
-     * @see [Create a draggable point](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-point/)
+     * @returns {HTMLElement} マップの `<canvas>` のコンテナです。
+     * @see [ドラッグ可能な点を作成する](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-point/)
      */
     getCanvasContainer() {
         return this._canvasContainer;
