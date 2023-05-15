@@ -176,15 +176,26 @@ abstract class Camera extends Evented {
         //addAssertions(this);
     }
 
+    // /**
+    //  * Returns the map's geographical centerpoint.
+    //  *
+    //  * @memberof Map#
+    //  * @returns The map's geographical centerpoint.
+    //  * @example
+    //  * // return a LngLat object such as {lng: 0, lat: 0}
+    //  * var center = map.getCenter();
+    //  * // access longitude and latitude values directly
+    //  * var {lng, lat} = map.getCenter();
+    //  */
     /**
-     * Returns the map's geographical centerpoint.
+     * 地図の中心点の経度緯度を返します。
      *
      * @memberof Map#
-     * @returns The map's geographical centerpoint.
+     * @returns 地図の中心点を返します。
      * @example
-     * // return a LngLat object such as {lng: 0, lat: 0}
+     * // {lng： 0, lat: 0} のような LngLat オブジェクトを返す
      * var center = map.getCenter();
-     * // access longitude and latitude values directly
+     * // 経度と緯度の値を直接取得する
      * var {lng, lat} = map.getCenter();
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
