@@ -2725,10 +2725,15 @@ class Map extends Camera {
         return this.style.getFeatureState(feature);
     }
 
+    // /**
+    //  * Returns the map's containing HTML element.
+    //  *
+    //  * @returns {HTMLElement} The map's container.
+    //  */
     /**
-     * Returns the map's containing HTML element.
+     * マップのコンテナ要素の HTMLを返します。
      *
-     * @returns {HTMLElement} The map's container.
+     * @returns {HTMLElement} マップのコンテナです。
      */
     getContainer() {
         return this._container;
