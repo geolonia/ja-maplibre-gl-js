@@ -2692,24 +2692,53 @@ class Map extends Camera {
         return this._update();
     }
 
+    // /**
+    //  * Gets the `state` of a feature.
+    //  * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
+    //  * Features are identified by their `feature.id` attribute, which can be any number or string.
+    //  *
+    //  * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/#feature-state)._
+    //  *
+    //  * @param {Object} feature Feature identifier. Feature objects returned from
+    //  * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
+    //  * @param {string | number} feature.id Unique id of the feature.
+    //  * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
+    //  * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
+    //  *
+    //  * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
+    //  *
+    //  * @example
+    //  * // When the mouse moves over the `my-layer` layer,
+    //  * // get the feature state for the feature under the mouse
+    //  * map.on('mousemove', 'my-layer', function(e) {
+    //  *   if (e.features.length > 0) {
+    //  *     map.getFeatureState({
+    //  *       source: 'my-source',
+    //  *       sourceLayer: 'my-source-layer',
+    //  *       id: e.features[0].id
+    //  *     });
+    //  *   }
+    //  * });
+    //  *
+    //  */
     /**
-     * Gets the `state` of a feature.
-     * A feature's `state` is a set of user-defined key-value pairs that are assigned to a feature at runtime.
-     * Features are identified by their `feature.id` attribute, which can be any number or string.
+     * フィーチャの `state` を取得する。
+     * フィーチャーの `state` は、実行時にフィーチャーに割り当てられる、ユーザー定義のキーと値のペアのセットです。
+     * フィーチャーは `feature.id` 属性によって識別され、任意の数値または文字列を指定することができます。
      *
-     * _Note: To access the values in a feature's state object for the purposes of styling the feature, use the [`feature-state` expression](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/#feature-state)._
+     * _備考: フィーチャーをスタイリングする目的で、フィーチャーのステートオブジェクトの値にアクセスするには、[`feature-state` expression](https://maplibre.org/maplibre-gl-js-docs/style-spec/expressions/#feature-state) を使用します。_
      *
-     * @param {Object} feature Feature identifier. Feature objects returned from
-     * {@link Map#queryRenderedFeatures} or event handlers can be used as feature identifiers.
-     * @param {string | number} feature.id Unique id of the feature.
-     * @param {string} feature.source The id of the vector or GeoJSON source for the feature.
-     * @param {string} [feature.sourceLayer] (optional) *For vector tile sources, `sourceLayer` is required.*
+     * @param {Object} feature フィーチャー識別子。
+     * {@link Map#queryRenderedFeatures} やイベントハンドラから返されるFeatureオブジェクトは、Feature識別子として使用することができます。
+     * @param {string | number} feature.id フィーチャーの一意のID。
+     * @param {string} feature.source フィーチャーのベクトルまたはGeoJSONソースのID。
+     * @param {string} [feature.sourceLayer] (オプション) *ベクタータイルソースの場合、`sourceLayer`が必要です。*
      *
-     * @returns {Object} The state of the feature: a set of key-value pairs that was assigned to the feature at runtime.
+     * @returns {Object} フィーチャーのステート: 実行時にフィーチャーに割り当てられたキーとバリューのペアのセットです。
      *
      * @example
-     * // When the mouse moves over the `my-layer` layer,
-     * // get the feature state for the feature under the mouse
+     * // マウスが `my-layer` レイヤーの上に移動したとき、
+     * // マウスの下にあるフィーチャの状態を取得する。
      * map.on('mousemove', 'my-layer', function(e) {
      *   if (e.features.length > 0) {
      *     map.getFeatureState({
