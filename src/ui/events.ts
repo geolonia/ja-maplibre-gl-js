@@ -395,28 +395,54 @@ export type MapEventType = {
 };
 
 export type MapEvent =
+    // /**
+    //  * Fired when a pointing device (usually a mouse) is pressed within the map.
+    //  *
+    //  * **Note:** This event is compatible with the optional `layerId` parameter.
+    //  * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+    //  * the cursor is pressed while inside a visible portion of the specifed layer.
+    //  *
+    //  * @event mousedown
+    //  * @memberof Map
+    //  * @instance
+    //  * @property {MapMouseEvent} data
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener
+    //  * map.on('mousedown', function() {
+    //  *   console.log('A mousedown event has occurred.');
+    //  * });
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener for a specific layer
+    //  * map.on('mousedown', 'poi-label', function() {
+    //  *   console.log('A mousedown event has occurred on a visible portion of the poi-label layer.');
+    //  * });
+    //  * @see [Create a draggable point](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-point/)
+    //  */
     /**
-     * Fired when a pointing device (usually a mouse) is pressed within the map.
+     * マップ内でポインティングデバイス（通常はマウス）が押されたときに発火します。
      *
-     * **Note:** This event is compatible with the optional `layerId` parameter.
-     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
-     * the cursor is pressed while inside a visible portion of the specifed layer.
+     * **Note:** このイベントはオプションの `layerId` パラメーターに対応しています。
+     * {@link Map#on} の第二引数に `layerId` が含まれる場合、指定されたレイヤーの可視部分内でカーソルが押された時のみ、イベントリスナーが発火します。
      *
      * @event mousedown
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
      * // Set an event listener
      * map.on('mousedown', function() {
      *   console.log('A mousedown event has occurred.');
      * });
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
-     * // Set an event listener for a specific layer
+     * // 特定のレイヤーのイベントリスナーを設定する
      * map.on('mousedown', 'poi-label', function() {
      *   console.log('A mousedown event has occurred on a visible portion of the poi-label layer.');
      * });
@@ -424,28 +450,54 @@ export type MapEvent =
      */
     'mousedown'
 
+    // /**
+    //  * Fired when a pointing device (usually a mouse) is released within the map.
+    //  *
+    //  * **Note:** This event is compatible with the optional `layerId` parameter.
+    //  * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+    //  * the cursor is released while inside a visible portion of the specifed layer.
+    //  *
+    //  * @event mouseup
+    //  * @memberof Map
+    //  * @instance
+    //  * @property {MapMouseEvent} data
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener
+    //  * map.on('mouseup', function() {
+    //  *   console.log('A mouseup event has occurred.');
+    //  * });
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener for a specific layer
+    //  * map.on('mouseup', 'poi-label', function() {
+    //  *   console.log('A mouseup event has occurred on a visible portion of the poi-label layer.');
+    //  * });
+    //  * @see [Create a draggable point](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-point/)
+    //  */
     /**
-     * Fired when a pointing device (usually a mouse) is released within the map.
+     * マップ内でポインティングデバイス（通常はマウス）が離されたときに発火します。
      *
-     * **Note:** This event is compatible with the optional `layerId` parameter.
-     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
-     * the cursor is released while inside a visible portion of the specifed layer.
+     * **Note:** このイベントはオプションの `layerId` パラメーターに対応しています。
+     * {@link Map#on} の第二引数に `layerId` が含まれる場合、指定されたレイヤーの可視部分内でカーソルが押された時のみ、イベントリスナーが発火します。
      *
      * @event mouseup
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
      * @example
-     * // Initialize the map
+     * //  マップの初期化
      * var map = new maplibregl.Map({ // map options });
      * // Set an event listener
      * map.on('mouseup', function() {
      *   console.log('A mouseup event has occurred.');
      * });
      * @example
-     * // Initialize the map
+     * //  マップの初期化
      * var map = new maplibregl.Map({ // map options });
-     * // Set an event listener for a specific layer
+     * // 特定のレイヤーのイベントリスナーを設定する
      * map.on('mouseup', 'poi-label', function() {
      *   console.log('A mouseup event has occurred on a visible portion of the poi-label layer.');
      * });
@@ -453,30 +505,58 @@ export type MapEvent =
      */
     | 'mouseup'
 
-    /**
-     * Fired when a pointing device (usually a mouse) is moved within the map.
-     * As you move the cursor across a web page containing a map,
-     * the event will fire each time it enters the map or any child elements.
-     *
-     * **Note:** This event is compatible with the optional `layerId` parameter.
-     * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
-     * the cursor is moved inside a visible portion of the specifed layer.
+    // /**
+    //  * Fired when a pointing device (usually a mouse) is moved within the map.
+    //  * As you move the cursor across a web page containing a map,
+    //  * the event will fire each time it enters the map or any child elements.
+    //  *
+    //  * **Note:** This event is compatible with the optional `layerId` parameter.
+    //  * If `layerId` is included as the second argument in {@link Map#on}, the event listener will fire only when the
+    //  * the cursor is moved inside a visible portion of the specifed layer.
+    //  *
+    //  * @event mouseover
+    //  * @memberof Map
+    //  * @instance
+    //  * @property {MapMouseEvent} data
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener
+    //  * map.on('mouseover', function() {
+    //  *   console.log('A mouseover event has occurred.');
+    //  * });
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener for a specific layer
+    //  * map.on('mouseover', 'poi-label', function() {
+    //  *   console.log('A mouseover event has occurred on a visible portion of the poi-label layer.');
+    //  * });
+    //  * @see [Get coordinates of the mouse pointer](https://maplibre.org/maplibre-gl-js-docs/example/mouse-position/)
+    //  * @see [Highlight features under the mouse pointer](https://maplibre.org/maplibre-gl-js-docs/example/hover-styles/)
+    //  * @see [Display a popup on hover](https://maplibre.org/maplibre-gl-js-docs/example/popup-on-hover/)
+    //  */
+        /**
+     * ポインティングデバイス（通常はマウス）がマップ内で移動したときに発火します。
+     * マップを含むWebページでカーソルを移動すると、このイベントが発生します。マップを含むWebページでカーソルを動かすと、マップや子要素に入るたびにイベントが発生します。
+     * **Note:** このイベントはオプションの `layerId` パラメーターに対応しています。
+     * {@link Map#on} の第二引数に `layerId` が含まれる場合、指定されたレイヤーの可視部分内でカーソルが押された時のみ、イベントリスナーが発火します。
      *
      * @event mouseover
      * @memberof Map
      * @instance
      * @property {MapMouseEvent} data
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
      * // Set an event listener
      * map.on('mouseover', function() {
      *   console.log('A mouseover event has occurred.');
      * });
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
-     * // Set an event listener for a specific layer
+     * // 特定のレイヤーのイベントリスナーを設定する
      * map.on('mouseover', 'poi-label', function() {
      *   console.log('A mouseover event has occurred on a visible portion of the poi-label layer.');
      * });
@@ -1039,8 +1119,25 @@ export type MapEvent =
      */
     | 'pitchend'
 
+    // /**
+    //  * Fired when a "box zoom" interaction starts. See {@link BoxZoomHandler}.
+    //  *
+    //  * @event boxzoomstart
+    //  * @memberof Map
+    //  * @instance
+    //  * @property {MapLibreZoomEvent} data
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener that fires
+    //  * // just before a "box zoom" interaction starts.
+    //  * map.on('boxzoomstart', function() {
+    //  *   console.log('A boxzoomstart event occurred.');
+    //  * });
+    //  */
     /**
-     * Fired when a "box zoom" interaction starts. See {@link BoxZoomHandler}.
+     * "box zoom" インタラクションが開始されたときに発生します。
+     * {@link BoxZoomHandler}を参照してください。
      *
      * @event boxzoomstart
      * @memberof Map
@@ -1076,16 +1173,33 @@ export type MapEvent =
      */
     | 'boxzoomend'
 
+    // /**
+    //  * Fired when the user cancels a "box zoom" interaction, or when the bounding box does not meet the minimum size threshold.
+    //  * See {@link BoxZoomHandler}.
+    //  *
+    //  * @event boxzoomcancel
+    //  * @memberof Map
+    //  * @instance
+    //  * @property {MapLibreZoomEvent} data
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener that fires
+    //  * // the user cancels a "box zoom" interaction.
+    //  * map.on('boxzoomcancel', function() {
+    //  *   console.log('A boxzoomcancel event occurred.');
+    //  * });
+    //  */
     /**
-     * Fired when the user cancels a "box zoom" interaction, or when the bounding box does not meet the minimum size threshold.
-     * See {@link BoxZoomHandler}.
+     * ユーザーが "box zoom"インタラクションをキャンセルしたとき、またはバウンディングボックスが最小サイズの閾値を満たさないときに発生します。
+     * {@link BoxZoomHandler} を参照してください。
      *
      * @event boxzoomcancel
      * @memberof Map
      * @instance
      * @property {MapLibreZoomEvent} data
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
      * // Set an event listener that fires
      * // the user cancels a "box zoom" interaction.
@@ -1095,14 +1209,29 @@ export type MapEvent =
      */
     | 'boxzoomcancel'
 
+    // /**
+    //  * Fired immediately after the map has been resized.
+    //  *
+    //  * @event resize
+    //  * @memberof Map
+    //  * @instance
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener that fires
+    //  * // immediately after the map has been resized.
+    //  * map.on('resize', function() {
+    //  *   console.log('A resize event occurred.');
+    //  * });
+    //  */
     /**
-     * Fired immediately after the map has been resized.
+     * マップのサイズが変更された直後に発生します。
      *
      * @event resize
      * @memberof Map
      * @instance
      * @example
-     * // Initialize the map
+     * // マップの初期化
      * var map = new maplibregl.Map({ // map options });
      * // Set an event listener that fires
      * // immediately after the map has been resized.
@@ -1112,6 +1241,21 @@ export type MapEvent =
      */
     | 'resize'
 
+    // /**
+    //  * Fired when the WebGL context is lost.
+    //  *
+    //  * @event webglcontextlost
+    //  * @memberof Map
+    //  * @instance
+    //  * @example
+    //  * // Initialize the map
+    //  * var map = new maplibregl.Map({ // map options });
+    //  * // Set an event listener that fires
+    //  * // when the WebGL context is lost.
+    //  * map.on('webglcontextlost', function() {
+    //  *   console.log('A webglcontextlost event occurred.');
+    //  * });
+    //  */
     /**
      * Fired when the WebGL context is lost.
      *
