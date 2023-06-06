@@ -1,0 +1,23 @@
+on:
+  - workflow_dispatch
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          git remote add upstream https://github.com/maplibre/maplibre-gl-js.git
+          git fetch upstream
+          git reset upstream/main
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          base: main
+          title: Sync MapLibre GL JS with upstream
