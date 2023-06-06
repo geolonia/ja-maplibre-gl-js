@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import {chromium} from 'playwright';
 import fs from 'fs';
 import zlib from 'zlib';
 import {execSync} from 'child_process';
@@ -20,13 +20,17 @@ function waitForConsole(page) {
     });
 }
 
-const browser = await puppeteer.launch({
-    headless: 'new'
+const browser = await chromium.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: false
 });
 try {
-
-    const page = await browser.newPage();
-    await page.setViewport({width: 600, height: 600, deviceScaleFactor: 2});
+    // Emulate high-DPI
+    const context = await browser.newContext({
+        viewport: {width: 600, height: 600},
+        deviceScaleFactor: 2,
+    });
+    const page = await context.newPage();
 
     console.log('collecting stats...');
     await page.setContent(benchHTML);

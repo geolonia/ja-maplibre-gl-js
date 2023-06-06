@@ -3,26 +3,28 @@ import Map from '../../ui/map';
 import DOM from '../../util/dom';
 import simulate from '../../../test/unit/lib/simulate_interaction';
 import browser from '../../util/browser';
-import {beforeMapTest} from '../../util/test/util';
+import {setMatchMedia, setPerformance, setWebGlContext} from '../../util/test/util';
 
 function createMap(options?) {
     return new Map(extend({container: DOM.create('div', '', window.document.body)}, options));
 }
 
 beforeEach(() => {
-    beforeMapTest();
+    setPerformance();
+    setWebGlContext();
+    setMatchMedia();
 });
 
 describe('mouse rotate', () => {
     test('MouseRotateHandler#isActive', () => {
-        const map = createMap({interactive: true});
+        const map = createMap();
         const mouseRotate = map.handlers._handlersById.mouseRotate;
 
         // Prevent inertial rotation.
         jest.spyOn(browser, 'now').mockReturnValue(0);
         expect(mouseRotate.isActive()).toBe(false);
 
-        simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2, clientX: 0, clientY: 0});
+        simulate.mousedown(map.getCanvas(), {buttons: 2, button: 2});
         map._renderTaskQueue.run();
         expect(mouseRotate.isActive()).toBe(false);
 
@@ -38,7 +40,7 @@ describe('mouse rotate', () => {
     });
 
     test('MouseRotateHandler#isActive #4622 regression test', () => {
-        const map = createMap({interactive: true});
+        const map = createMap();
         const mouseRotate = map.handlers._handlersById.mouseRotate;
 
         // Prevent inertial rotation.

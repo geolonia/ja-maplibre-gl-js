@@ -1,4 +1,4 @@
-import {asyncAll} from './util';
+import {uniqueId, asyncAll} from './util';
 import Actor from './actor';
 
 import type WorkerPool from './worker_pool';
@@ -20,15 +20,15 @@ class Dispatcher {
         new (...args: any): Actor;
     };
 
-    constructor(workerPool: WorkerPool, parent: any, mapId: number) {
+    constructor(workerPool: WorkerPool, parent: any) {
         this.workerPool = workerPool;
         this.actors = [];
         this.currentActor = 0;
-        this.id = mapId;
-        const workers = this.workerPool.acquire(mapId);
+        this.id = uniqueId();
+        const workers = this.workerPool.acquire(this.id);
         for (let i = 0; i < workers.length; i++) {
             const worker = workers[i];
-            const actor = new Dispatcher.Actor(worker, parent, mapId);
+            const actor = new Dispatcher.Actor(worker, parent, this.id);
             actor.name = `Worker ${i}`;
             this.actors.push(actor);
         }
@@ -55,10 +55,10 @@ class Dispatcher {
         return this.actors[this.currentActor];
     }
 
-    remove(mapRemoved: boolean = true) {
+    remove() {
         this.actors.forEach((actor) => { actor.remove(); });
         this.actors = [];
-        if (mapRemoved) this.workerPool.release(this.id);
+        this.workerPool.release(this.id);
     }
 }
 

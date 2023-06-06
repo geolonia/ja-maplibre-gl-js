@@ -4,9 +4,8 @@ import Point from '@mapbox/point-geometry';
 import MercatorCoordinate from '../geo/mercator_coordinate';
 import {register} from '../util/web_worker_transfer';
 import {mat4} from 'gl-matrix';
-import {ICanonicalTileID, IMercatorCoordinate} from '@maplibre/maplibre-gl-style-spec';
 
-export class CanonicalTileID implements ICanonicalTileID {
+export class CanonicalTileID {
     z: number;
     x: number;
     y: number;
@@ -24,7 +23,7 @@ export class CanonicalTileID implements ICanonicalTileID {
         this.key = calculateKey(0, z, z, x, y);
     }
 
-    equals(id: ICanonicalTileID) {
+    equals(id: CanonicalTileID) {
         return this.z === id.z && this.x === id.x && this.y === id.y;
     }
 
@@ -43,12 +42,12 @@ export class CanonicalTileID implements ICanonicalTileID {
             .replace(/{bbox-epsg-3857}/g, bbox);
     }
 
-    isChildOf(parent: ICanonicalTileID) {
+    isChildOf(parent: CanonicalTileID) {
         const dz = this.z - parent.z;
         return  dz > 0 && parent.x === (this.x >> dz) && parent.y === (this.y >> dz);
     }
 
-    getTilePoint(coord: IMercatorCoordinate) {
+    getTilePoint(coord: MercatorCoordinate) {
         const tilesAtZoom = Math.pow(2, this.z);
         return new Point(
             (coord.x * tilesAtZoom - this.x) * EXTENT,

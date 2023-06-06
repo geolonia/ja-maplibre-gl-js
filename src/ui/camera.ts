@@ -1,5 +1,5 @@
 import {bindAll, extend, warnOnce, clamp, wrap, ease as defaultEasing, pick} from '../util/util';
-import {interpolates} from '@maplibre/maplibre-gl-style-spec';
+import {number as interpolate} from '../style-spec/util/interpolate';
 import browser from '../util/browser';
 import LngLat from '../geo/lng_lat';
 import LngLatBounds from '../geo/lng_lat_bounds';
@@ -109,14 +109,14 @@ export type FitBoundsOptions = FlyToOptions & {
  * @typedef {Object} AnimationOptions
  * @property {number} duration The animation's duration, measured in milliseconds.
  * @property {Function} easing A function taking a time in the range 0..1 and returning a number where 0 is
- * the initial state and 1 is the final state.
+ *   the initial state and 1 is the final state.
  * @property {PointLike} offset of the target center relative to real map container center at the end of animation.
  * @property {boolean} animate If `false`, no animation will occur.
  * @property {boolean} essential If `true`, then the animation is considered essential and will not be affected by
- * [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
+ *   [`prefers-reduced-motion`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion).
  * @property {boolean} freezeElevation Default false. Needed in 3D maps to let the camera stay in a constant
- * height based on sea-level. After the animation finished the zoom-level will be recalculated in respect of
- * the distance from the camera to the center-coordinate-altitude.
+ *   height based on sea-level. After the animation finished the zoom-level will be recalculated in respect of
+ *   the distance from the camera to the center-coordinate-altitude.
  */
 export type AnimationOptions = {
     duration?: number;
@@ -125,20 +125,6 @@ export type AnimationOptions = {
     animate?: boolean;
     essential?: boolean;
     freezeElevation?: boolean;
-};
-
-export type CameraUpdateTransformFunction =  (next: {
-    center: LngLat;
-    zoom: number;
-    pitch: number;
-    bearing: number;
-    elevation: number;
-}) => {
-    center?: LngLat;
-    zoom?: number;
-    pitch?: number;
-    bearing?: number;
-    elevation?: number;
 };
 
 abstract class Camera extends Evented {
@@ -173,13 +159,6 @@ abstract class Camera extends Evented {
     // so the linear interpolation between start and target keeps smooth and without jumps.
     _elevationStart: number;
 
-    /** Used to track accumulated changes during continuous interaction */
-    _requestedCameraState?: Transform;
-    /** A callback used to defer camera updates or apply arbitrary constraints.
-     * If specified, this Camera instance can be used as a stateless component in React etc.
-     */
-    transformCameraUpdate: CameraUpdateTransformFunction | null;
-
     abstract _requestRenderFrame(a: () => void): TaskID;
     abstract _cancelRenderFrame(_: TaskID): void;
 
@@ -195,20 +174,28 @@ abstract class Camera extends Evented {
         bindAll(['_renderFrameCallback'], this);
 
         //addAssertions(this);
-        this.on('moveend', () => {
-            delete this._requestedCameraState;
-        });
     }
 
+    // /**
+    //  * Returns the map's geographical centerpoint.
+    //  *
+    //  * @memberof Map#
+    //  * @returns The map's geographical centerpoint.
+    //  * @example
+    //  * // return a LngLat object such as {lng: 0, lat: 0}
+    //  * var center = map.getCenter();
+    //  * // access longitude and latitude values directly
+    //  * var {lng, lat} = map.getCenter();
+    //  */
     /**
-     * Returns the map's geographical centerpoint.
+     * 地図の中心点の経度緯度を返します。
      *
      * @memberof Map#
-     * @returns The map's geographical centerpoint.
+     * @returns 地図の中心点を返します。
      * @example
-     * // return a LngLat object such as {lng: 0, lat: 0}
+     * // {lng： 0, lat: 0} のような LngLat オブジェクトを返す
      * var center = map.getCenter();
-     * // access longitude and latitude values directly
+     * // 経度と緯度の値を直接取得する
      * var {lng, lat} = map.getCenter();
      */
     getCenter(): LngLat { return new LngLat(this.transform.center.lng, this.transform.center.lat); }
@@ -374,13 +361,21 @@ abstract class Camera extends Evented {
         return this;
     }
 
+    // /**
+    //  * Returns the map's current bearing. The bearing is the compass direction that is "up"; for example, a bearing
+    //  * of 90° orients the map so that east is up.
+    //  *
+    //  * @memberof Map#
+    //  * @returns The map's current bearing.
+    //  * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+    //  */
     /**
-     * Returns the map's current bearing. The bearing is the compass direction that is "up"; for example, a bearing
-     * of 90° orients the map so that east is up.
+     * ベアリング関数は、マップの現在の方位を返します。方位はコンパスの「上」の方向です。
+     * 例えば、90°の方位は、東が上になるように地図を配置します。
      *
      * @memberof Map#
-     * @returns The map's current bearing.
-     * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+     * @returns 地図の現在の方位。
+     * @see [ゲームの様な操作でマップを移動します](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
      */
     getBearing(): number { return this.transform.bearing; }
 
@@ -527,18 +522,33 @@ abstract class Camera extends Evented {
         return this;
     }
 
+    // /**
+    //  * @memberof Map#
+    //  * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
+    //  *      the highest zoom level up to and including `Map#getMaxZoom()` that fits
+    //  *      in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
+    //  * @param options Options object
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
+    //  * @returns {CenterZoomBearing} If map is able to fit to provided bounds, returns `center`, `zoom`, and `bearing`.
+    //  *      If map is unable to fit, method will warn and return undefined.
+    //  * @example
+    //  * var bbox = [[-79, 43], [-73, 45]];
+    //  * var newCameraTransform = map.cameraForBounds(bbox, {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  */
     /**
      * @memberof Map#
-     * @param {LngLatBoundsLike} bounds Calculate the center for these bounds in the viewport and use
-     * the highest zoom level up to and including `Map#getMaxZoom()` that fits
-     * in the viewport. LngLatBounds represent a box that is always axis-aligned with bearing 0.
-     * @param options Options object
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {number} [options.bearing=0] Desired map bearing at end of animation, in degrees.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the camera would transition to the specified bounds.
-     * @returns {CenterZoomBearing} If map is able to fit to provided bounds, returns `center`, `zoom`, and `bearing`.
-     * If map is unable to fit, method will warn and return undefined.
+     * @param {LngLatBoundsLike} bounds ビューポートにおける指定された領域の中心を計算し、ビューポートに収まる `Map#getMaxZoom()` までの最大のズームレベルを使用します。LngLatBounds は、常に北が上に来るように位置合わせされたボックスを表します。
+     * @param options オプションオブジェクト
+     * @param {number | PaddingOptions} [options.padding] 与えられた領域に追加する、ピクセルで指定するパディング。
+     * @param {number} [options.bearing=0] アニメーション終了時の方位（度数）を指定します。
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心（地図の中心に対して相対的な位置）をピクセル単位で指定します。
+     * @param {number} [options.maxZoom] カメラが指定された範囲に移動する時に許可する最大ズームレベル。
+     * @returns {CenterZoomBearing} マップが指定した範囲に収まる場合は、 `center`, `zoom`, `bearing` を返します。マップが範囲に収まらない場合は、警告が表示され、undefined を返します。
      * @example
      * var bbox = [[-79, 43], [-73, 45]];
      * var newCameraTransform = map.cameraForBounds(bbox, {
@@ -643,22 +653,45 @@ abstract class Camera extends Evented {
         };
     }
 
+    // /**
+    //  * Pans and zooms the map to contain its visible area within the specified geographical bounds.
+    //  * This function will also reset the map's bearing to 0 if bearing is nonzero.
+    //  *
+    //  * @memberof Map#
+    //  * @param bounds Center these bounds in the viewport and use the highest
+    //  *      zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
+    //  * @param {FitBoundsOptions} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {boolean} [options.linear=false] If `true`, the map transitions using
+    //  *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+    //  *     those functions and {@link AnimationOptions} for information about options available.
+    //  * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+    //  * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires moveend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * var bbox = [[-79, 43], [-73, 45]];
+    //  * map.fitBounds(bbox, {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  * @see [Fit a map to a bounding box](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
+    //  */
     /**
-     * Pans and zooms the map to contain its visible area within the specified geographical bounds.
-     * This function will also reset the map's bearing to 0 if bearing is nonzero.
+     * 指定された座標範囲に合わせて地図をパンおよびズームします。 この関数は、方位が0でない場合、地図の方位を0にリセットします。
      *
      * @memberof Map#
-     * @param bounds Center these bounds in the viewport and use the highest
-     * zoom level up to and including `Map#getMaxZoom()` that fits them in the viewport.
-     * @param {FitBoundsOptions} [options] Options supports all properties from {@link AnimationOptions} and {@link CameraOptions} in addition to the fields below.
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     * {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     * those functions and {@link AnimationOptions} for information about options available.
-     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param {Object} [eventData] Additional properties to be added to event objects of events triggered by this method.
+     * @param bounds これらの境界をビューポートの中央に配置し、その境界がビューポートに収まる最高レベルのズーム（`Map#getMaxZoom()` を含む）を使用します。
+     * @param {FitBoundsOptions} [options] Optionsは、以下の項目に加えて、{@link AnimationOptions} と {@link CameraOptions} の全てのプロパティをサポートしています。
+     * @param {number | PaddingOptions} [options.padding] 与えられた領域に追加されるパディングの量をピクセルで指定します。
+     * @param {boolean} [options.linear=false] `true` の場合、{@link Map#easeTo} を使ってマップを遷移させます。`false` の場合、マップは {@link Map#flyTo} を使って遷移します。
+     * 利用可能なオプションについては、これらの関数と {@link AnimationOptions} を参照してください。
+     * @param {Function} [options.easing] アニメーション遷移のためのイージング関数。詳細は {@link AnimationOptions} を参照してください。
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心を、地図の中心から相対的に、ピクセルで指定してください。
+     * @param {number} [options.maxZoom] 地図表示が指定された範囲に遷移する際に許容する最大ズームレベル。
+     * @param {Object} [eventData] このメソッドによって発火するイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -667,7 +700,7 @@ abstract class Camera extends Evented {
      * map.fitBounds(bbox, {
      *   padding: {top: 10, bottom:25, left: 15, right: 5}
      * });
-     * @see [Fit a map to a bounding box](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
+     * @see [地図をバウンディングボックスに合わせます](https://maplibre.org/maplibre-gl-js-docs/example/fitbounds/)
      */
     fitBounds(bounds: LngLatBoundsLike, options?: FitBoundsOptions, eventData?: any) {
         return this._fitInternal(
@@ -676,24 +709,51 @@ abstract class Camera extends Evented {
             eventData);
     }
 
+    // /**
+    //  * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
+    //  * once the map is rotated to the specified bearing. To zoom without rotating,
+    //  * pass in the current map bearing.
+    //  *
+    //  * @memberof Map#
+    //  * @param p0 First point on screen, in pixel coordinates
+    //  * @param p1 Second point on screen, in pixel coordinates
+    //  * @param bearing Desired map bearing at end of animation, in degrees
+    //  * @param options Options object
+    //  * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
+    //  * @param {boolean} [options.linear=false] If `true`, the map transitions using
+    //  *     {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
+    //  *     those functions and {@link AnimationOptions} for information about options available.
+    //  * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
+    //  * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
+    //  * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires moveend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * var p0 = [220, 400];
+    //  * var p1 = [500, 900];
+    //  * map.fitScreenCoordinates(p0, p1, map.getBearing(), {
+    //  *   padding: {top: 10, bottom:25, left: 15, right: 5}
+    //  * });
+    //  * @see Used by {@link BoxZoomHandler}
+    //  */
     /**
-     * Pans, rotates and zooms the map to to fit the box made by points p0 and p1
-     * once the map is rotated to the specified bearing. To zoom without rotating,
-     * pass in the current map bearing.
+     * 地図を指定された方位に回転させ、点 p0 と p1 で作られる枠に合うように、パン、回転、ズームを行います。
+     * 回転させずにズームするには、現在の地図のベアリングを渡して下さい。
      *
      * @memberof Map#
-     * @param p0 First point on screen, in pixel coordinates
-     * @param p1 Second point on screen, in pixel coordinates
-     * @param bearing Desired map bearing at end of animation, in degrees
-     * @param options Options object
-     * @param {number | PaddingOptions} [options.padding] The amount of padding in pixels to add to the given bounds.
-     * @param {boolean} [options.linear=false] If `true`, the map transitions using
-     * {@link Map#easeTo}. If `false`, the map transitions using {@link Map#flyTo}. See
-     * those functions and {@link AnimationOptions} for information about options available.
-     * @param {Function} [options.easing] An easing function for the animated transition. See {@link AnimationOptions}.
-     * @param {PointLike} [options.offset=[0, 0]] The center of the given bounds relative to the map's center, measured in pixels.
-     * @param {number} [options.maxZoom] The maximum zoom level to allow when the map view transitions to the specified bounds.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param p0 画面上の最初の点（ピクセル座標）
+     * @param p1 画面上の2つ目の点（ピクセル座標）
+     * @param bearing アニメーション終了時の地図の方位（度数）
+     * @param options オプションオブジェクト
+     * @param {number | PaddingOptions} [options.padding] 与えられた境界線に追加されるパディングの量をピクセル単位で指定します。
+     * @param {boolean} [options.linear=false] `true` の場合、{@link Map#easeTo} を使ってマップを遷移させます。`false` の場合、マップは {@link Map#flyTo} を使って遷移します。
+     * 利用可能なオプションについては、これらの関数と {@link AnimationOptions} を参照してください。
+     * @param {Function} [options.easing] アニメーション遷移のためのイージング関数。参照：{@link AnimationOptions}.
+     * @param {PointLike} [options.offset=[0, 0]] 与えられた領域の中心（地図の中心に対して相対的な位置）をピクセル単位で指定します。
+     * @param {number} [options.maxZoom] 地図画面が指定された範囲に遷移する際に許可する最大ズームレベル。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires moveend
      * @returns {Map} `this`
@@ -721,7 +781,7 @@ abstract class Camera extends Evented {
         if (!calculatedOptions) return this;
 
         options = extend(calculatedOptions, options);
-        // Explicitly remove the padding field because, calculatedOptions already accounts for padding by setting zoom and center accordingly.
+        // Explictly remove the padding field because, calculatedOptions already accounts for padding by setting zoom and center accordingly.
         delete options.padding;
 
         return options.linear ?
@@ -764,7 +824,7 @@ abstract class Camera extends Evented {
     jumpTo(options: JumpToOptions, eventData?: any) {
         this.stop();
 
-        const tr = this._getTransformForUpdate();
+        const tr = this.transform;
         let zoomChanged = false,
             bearingChanged = false,
             pitchChanged = false;
@@ -791,7 +851,6 @@ abstract class Camera extends Evented {
         if (options.padding != null && !tr.isPaddingEqual(options.padding)) {
             tr.padding = options.padding;
         }
-        this._applyUpdatedTransform(tr);
 
         this.fire(new Event('movestart', eventData))
             .fire(new Event('move', eventData));
@@ -817,15 +876,24 @@ abstract class Camera extends Evented {
         return this.fire(new Event('moveend', eventData));
     }
 
+    // /**
+    //  * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
+    //  * and returns them as Cameraoptions.
+    //  * @memberof Map#
+    //  * @param from The camera to look from
+    //  * @param altitudeFrom The altitude of the camera to look from
+    //  * @param to The center to look at
+    //  * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
+    //  * @returns {CameraOptions} the calculated camera options
+    //  */
     /**
-     * Calculates pitch, zoom and bearing for looking at @param newCenter with the camera position being @param newCenter
-     * and returns them as Cameraoptions.
+     * カメラ位置を@param newCenterとして，@param newCenterを見るためのピッチ，ズーム，方位を計算し，Cameraoptionsとして返します．
      * @memberof Map#
-     * @param from The camera to look from
-     * @param altitudeFrom The altitude of the camera to look from
-     * @param to The center to look at
-     * @param altitudeTo Optional altitude of the center to look at. If none given the ground height will be used.
-     * @returns {CameraOptions} the calculated camera options
+     * @param from カメラの位置
+     * @param altitudeFrom カメラの高度
+     * @param to 見るべき対象の中心位置
+     * @param altitudeTo オプションで、見るべき中心の高度を指定します。何も指定しない場合は地上高が使用されます。
+     * @returns {CameraOptions} 計算されたカメラオプション
      */
     calculateCameraOptionsFromTo(from: LngLat, altitudeFrom: number, to: LngLat, altitudeTo: number = 0) : CameraOptions {
         const fromMerc = MercatorCoordinate.fromLngLat(from, altitudeFrom);
@@ -852,19 +920,42 @@ abstract class Camera extends Evented {
         };
     }
 
+    // /**
+    //  * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
+    //  * between old and new values. The map will retain its current values for any
+    //  * details not specified in `options`.
+    //  *
+    //  * Note: The transition will happen instantly if the user has enabled
+    //  * the `reduced motion` accesibility feature enabled in their operating system,
+    //  * unless `options` includes `essential: true`.
+    //  *
+    //  * @memberof Map#
+    //  * @param options Options describing the destination and animation of the transition.
+    //  *            Accepts {@link CameraOptions} and {@link AnimationOptions}.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires zoomstart
+    //  * @fires pitchstart
+    //  * @fires rotate
+    //  * @fires move
+    //  * @fires zoom
+    //  * @fires pitch
+    //  * @fires moveend
+    //  * @fires zoomend
+    //  * @fires pitchend
+    //  * @returns {Map} `this`
+    //  * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+    //  */
     /**
-     * Changes any combination of `center`, `zoom`, `bearing`, `pitch`, and `padding` with an animated transition
-     * between old and new values. The map will retain its current values for any
-     * details not specified in `options`.
+     * `center`, `zoom`, `bearing`, `pitch`, `padding` の任意の組み合わせを、古い値と新しい値の間をアニメーションで遷移しながら変更します。
+     * マップは `options` で指定されていない詳細については、現在の値を保持します。
      *
-     * Note: The transition will happen instantly if the user has enabled
-     * the `reduced motion` accessibility feature enabled in their operating system,
-     * unless `options` includes `essential: true`.
+     * 注意: ユーザーがオペレーティングシステムで `reduced motion` アクセシビリティ機能を有効にしている場合、
+     * `options` に `essential: true` が含まれていなければ、移行は即座に行われます。
      *
      * @memberof Map#
-     * @param options Options describing the destination and animation of the transition.
-     * Accepts {@link CameraOptions} and {@link AnimationOptions}.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param options 遷移先とアニメーションを指定するオプションです。{@link CameraOptions}と{@link AnimationOptions}を受け付けます。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -876,7 +967,7 @@ abstract class Camera extends Evented {
      * @fires zoomend
      * @fires pitchend
      * @returns {Map} `this`
-     * @see [Navigate the map with game-like controls](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
+     * @see [ゲーム感覚の操作でマップを移動](https://maplibre.org/maplibre-gl-js-docs/example/game-controls/)
      */
     easeTo(options: EaseToOptions & {
         easeId?: string;
@@ -892,7 +983,7 @@ abstract class Camera extends Evented {
 
         if (options.animate === false || (!options.essential && browser.prefersReducedMotion)) options.duration = 0;
 
-        const tr = this._getTransformForUpdate(),
+        const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -938,17 +1029,17 @@ abstract class Camera extends Evented {
 
         this._ease((k) => {
             if (this._zooming) {
-                tr.zoom = interpolates.number(startZoom, zoom, k);
+                tr.zoom = interpolate(startZoom, zoom, k);
             }
             if (this._rotating) {
-                tr.bearing = interpolates.number(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
-                tr.pitch = interpolates.number(startPitch, pitch, k);
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (this._padding) {
                 tr.interpolatePadding(startPadding, padding as PaddingOptions, k);
-                // When padding is being applied, Transform#centerPoint is changing continuously,
+                // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every frame
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
@@ -966,8 +1057,6 @@ abstract class Camera extends Evented {
                 const newCenter = tr.unproject(from.add(delta.mult(k * speedup)).mult(scale));
                 tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
             }
-
-            this._applyUpdatedTransform(tr);
 
             this._fireMoveEvents(eventData);
 
@@ -1011,52 +1100,12 @@ abstract class Camera extends Evented {
             this._elevationStart += k * (pitch1 - pitch2);
             this._elevationTarget = elevation;
         }
-        this.transform.elevation = interpolates.number(this._elevationStart, this._elevationTarget, k);
+        this.transform.elevation = interpolate(this._elevationStart, this._elevationTarget, k);
     }
 
     _finalizeElevation() {
         this.transform.freezeElevation = false;
         this.transform.recalculateZoom(this.terrain);
-    }
-
-    /**
-     * Called when the camera is about to be manipulated.
-     * If `transformCameraUpdate` is specified, a copy of the current transform is created to track the accumulated changes.
-     * This underlying transform represents the "desired state" proposed by input handlers / animations / UI controls.
-     * It may differ from the state used for rendering (`this.transform`).
-     * @returns Transform to apply changes to
-     */
-    _getTransformForUpdate(): Transform {
-        if (!this.transformCameraUpdate) return this.transform;
-
-        if (!this._requestedCameraState) {
-            this._requestedCameraState = this.transform.clone();
-        }
-        return this._requestedCameraState;
-    }
-
-    /**
-     * Called after the camera is done being manipulated.
-     * @param {Transform} tr - the requested camera end state
-     * Call `transformCameraUpdate` if present, and then apply the "approved" changes.
-     */
-    _applyUpdatedTransform(tr: Transform) {
-        if (!this.transformCameraUpdate) return;
-
-        const nextTransform = tr.clone();
-        const {
-            center,
-            zoom,
-            pitch,
-            bearing,
-            elevation
-        } = this.transformCameraUpdate(nextTransform);
-        if (center) nextTransform.center = center;
-        if (zoom !== undefined) nextTransform.zoom = zoom;
-        if (pitch !== undefined) nextTransform.pitch = pitch;
-        if (bearing !== undefined) nextTransform.bearing = bearing;
-        if (elevation !== undefined) nextTransform.elevation = elevation;
-        this.transform.apply(nextTransform);
     }
 
     _fireMoveEvents(eventData?: any) {
@@ -1101,37 +1150,89 @@ abstract class Camera extends Evented {
         this.fire(new Event('moveend', eventData));
     }
 
+    // /**
+    //  * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
+    //  * evokes flight. The animation seamlessly incorporates zooming and panning to help
+    //  * the user maintain her bearings even after traversing a great distance.
+    //  *
+    //  * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
+    //  * if the user has the `reduced motion` accesibility feature enabled in their operating system,
+    //  * unless 'options' includes `essential: true`.
+    //  *
+    //  * @memberof Map#
+    //  * @param {FlyToOptions} options Options describing the destination and animation of the transition.
+    //  *     Accepts {@link CameraOptions}, {@link AnimationOptions},
+    //  *     and the following additional options.
+    //  * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
+    //  *     flight path. A high value maximizes zooming for an exaggerated animation, while a low
+    //  *     value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
+    //  *     value selected by participants in the user study discussed in
+    //  *     [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
+    //  *     `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
+    //  *     value of 1 would produce a circular motion.
+    //  * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
+    //  *     `options.curve` is specified, this option is ignored.
+    //  * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
+    //  *     `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
+    //  *     by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
+    //  *     It does not correspond to a fixed physical distance, but varies by zoom level.
+    //  * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
+    //  *     per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
+    //  * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
+    //  *     If duration exceeds maximum duration, it resets to 0.
+    //  * @param eventData Additional properties to be added to event objects of events triggered by this method.
+    //  * @fires movestart
+    //  * @fires zoomstart
+    //  * @fires pitchstart
+    //  * @fires move
+    //  * @fires zoom
+    //  * @fires rotate
+    //  * @fires pitch
+    //  * @fires moveend
+    //  * @fires zoomend
+    //  * @fires pitchend
+    //  * @returns {Map} `this`
+    //  * @example
+    //  * // fly with default options to null island
+    //  * map.flyTo({center: [0, 0], zoom: 9});
+    //  * // using flyTo options
+    //  * map.flyTo({
+    //  *   center: [0, 0],
+    //  *   zoom: 9,
+    //  *   speed: 0.2,
+    //  *   curve: 1,
+    //  *   easing(t) {
+    //  *     return t;
+    //  *   }
+    //  * });
+    //  * @see [Fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
+    //  * @see [Slowly fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
+    //  * @see [Fly to a location based on scroll position](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
+    //  */
     /**
-     * Changes any combination of center, zoom, bearing, and pitch, animating the transition along a curve that
-     * evokes flight. The animation seamlessly incorporates zooming and panning to help
-     * the user maintain her bearings even after traversing a great distance.
+     * センター、ズーム、ベアリング、ピッチの組み合わせを自由に変更し、飛行をイメージさせるカーブに沿って遷移するアニメーションを実現します。
+     * また、ズームとパンをシームレスに組み合わせたアニメーションにより、長距離を移動しても方位を維持しやすくなっています。
      *
-     * Note: The animation will be skipped, and this will behave equivalently to `jumpTo`
-     * if the user has the `reduced motion` accessibility feature enabled in their operating system,
-     * unless 'options' includes `essential: true`.
+     * 注意: ユーザーのオペレーティングシステムで `reduced motion` アクセシビリティ機能が有効になっている場合、
+     * 'options' に `essential: true` が含まれていないとアニメーションがスキップされ、`jumpTo` と同等の動作になります。
      *
      * @memberof Map#
-     * @param {FlyToOptions} options Options describing the destination and animation of the transition.
-     * Accepts {@link CameraOptions}, {@link AnimationOptions},
-     * and the following additional options.
-     * @param {number} [options.curve=1.42] The zooming "curve" that will occur along the
-     * flight path. A high value maximizes zooming for an exaggerated animation, while a low
-     * value minimizes zooming for an effect closer to {@link Map#easeTo}. 1.42 is the average
-     * value selected by participants in the user study discussed in
-     * [van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf). A value of
-     * `Math.pow(6, 0.25)` would be equivalent to the root mean squared average velocity. A
-     * value of 1 would produce a circular motion.
-     * @param {number} [options.minZoom] The zero-based zoom level at the peak of the flight path. If
-     * `options.curve` is specified, this option is ignored.
-     * @param {number} [options.speed=1.2] The average speed of the animation defined in relation to
-     * `options.curve`. A speed of 1.2 means that the map appears to move along the flight path
-     * by 1.2 times `options.curve` screenfuls every second. A _screenful_ is the map's visible span.
-     * It does not correspond to a fixed physical distance, but varies by zoom level.
-     * @param {number} [options.screenSpeed] The average speed of the animation measured in screenfuls
-     * per second, assuming a linear timing curve. If `options.speed` is specified, this option is ignored.
-     * @param {number} [options.maxDuration] The animation's maximum duration, measured in milliseconds.
-     * If duration exceeds maximum duration, it resets to 0.
-     * @param eventData Additional properties to be added to event objects of events triggered by this method.
+     * @param {FlyToOptions} options 遷移先とアニメーションを記述するオプションです。
+     * {@link CameraOptions}、{@link AnimationOptions}、および以下の追加オプションを受け付けます。
+     * @param {number} [options.curve=1.42] 飛行経路に沿って発生するズームの「カーブ」です。
+     * 高い値はズームを最大にして誇張されたアニメーションを作り、低い値はズームを最小にして{@link Map#easeTo}に近い効果を生み出します。
+     * 1.42は[van Wijk (2003)](https://www.win.tue.nl/~vanwijk/zoompan.pdf)で論じたユーザー調査の参加者が選んだ平均値です。
+     * `Math.pow(6, 0.25)`の値は、二乗平均平方根の平均速度と同等です。1の値は円運動になります。
+     * @param {number} [options.minZoom] 飛行経路のピーク時のゼロ基準のズームレベル。
+     * `option.curve` が指定されている場合、このオプションは無視されます。
+     * @param {number} [options.speed=1.2] アニメーションの平均速度で、`options.curve`との関連で定義されます。
+     * 速度が1.2であれば、マップは毎秒1.2倍の `options.curve` 画面いっぱいに飛行経路に沿って移動しているように見えるということです。
+     * _screenful_ はマップの可視範囲です。これは物理的な固定距離ではなく、ズームレベルによって変化します。
+     * @param {number} [options.screenSpeed] 線形タイミングカーブを仮定して、アニメーションの平均速度を1秒あたりのスクリーンフルで測定します。
+     * もし `options.speed` が指定された場合、このオプションは無視されます。
+     * @param {number} [options.maxDuration] アニメーションの最大継続時間をミリ秒単位で指定します。
+     * 継続時間が最大継続時間を超えると、0にリセットされます。
+     * @param eventData このメソッドによってトリガされるイベントのイベントオブジェクトに追加されるプロパティ。
      * @fires movestart
      * @fires zoomstart
      * @fires pitchstart
@@ -1144,9 +1245,9 @@ abstract class Camera extends Evented {
      * @fires pitchend
      * @returns {Map} `this`
      * @example
-     * // fly with default options to null island
+     * // デフォルトのオプションでNULL島に飛びます。
      * map.flyTo({center: [0, 0], zoom: 9});
-     * // using flyTo options
+     * // flyTo オプションを使用します。
      * map.flyTo({
      *   center: [0, 0],
      *   zoom: 9,
@@ -1156,9 +1257,9 @@ abstract class Camera extends Evented {
      *     return t;
      *   }
      * });
-     * @see [Fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
-     * @see [Slowly fly to a location](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
-     * @see [Fly to a location based on scroll position](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
+     * @see [目的地まで飛びます](https://maplibre.org/maplibre-gl-js-docs/example/flyto/)
+     * @see [ゆっくり目的地まで飛びます](https://maplibre.org/maplibre-gl-js-docs/example/flyto-options/)
+     * @see [スクロールの位置をもとに、その場所へ飛びます](https://maplibre.org/maplibre-gl-js-docs/example/scroll-fly-to/)
      */
     flyTo(options: FlyToOptions, eventData?: any) {
         // Fall through to jumpTo if user has set prefers-reduced-motion
@@ -1184,7 +1285,7 @@ abstract class Camera extends Evented {
             easing: defaultEasing
         }, options);
 
-        const tr = this._getTransformForUpdate(),
+        const tr = this.transform,
             startZoom = this.getZoom(),
             startBearing = this.getBearing(),
             startPitch = this.getPitch(),
@@ -1297,14 +1398,14 @@ abstract class Camera extends Evented {
             tr.zoom = k === 1 ? zoom : startZoom + tr.scaleZoom(scale);
 
             if (this._rotating) {
-                tr.bearing = interpolates.number(startBearing, bearing, k);
+                tr.bearing = interpolate(startBearing, bearing, k);
             }
             if (this._pitching) {
-                tr.pitch = interpolates.number(startPitch, pitch, k);
+                tr.pitch = interpolate(startPitch, pitch, k);
             }
             if (this._padding) {
                 tr.interpolatePadding(startPadding, padding as PaddingOptions, k);
-                // When padding is being applied, Transform#centerPoint is changing continuously,
+                // When padding is being applied, Transform#centerPoint is changing continously,
                 // thus we need to recalculate offsetPoint every frame
                 pointAtOffset = tr.centerPoint.add(offsetAsPoint);
             }
@@ -1313,8 +1414,6 @@ abstract class Camera extends Evented {
 
             const newCenter = k === 1 ? center : tr.unproject(from.add(delta.mult(u(s))).mult(scale));
             tr.setLocationAtPoint(tr.renderWorldCopies ? newCenter.wrap() : newCenter, pointAtOffset);
-
-            this._applyUpdatedTransform(tr);
 
             this._fireMoveEvents(eventData);
 
@@ -1412,26 +1511,6 @@ abstract class Camera extends Evented {
             delta > 180 ? -360 :
                 delta < -180 ? 360 : 0;
     }
-
-    /**
-     * Query the current elevation of location. It return null if terrain is not enabled. the elevation is in meters relative to mean sea-level
-     * @memberof Map#
-     * @param lngLatLike [x,y] or LngLat coordinates of the location
-     * @returns {number} elevation in meters
-     */
-    queryTerrainElevation(lngLatLike: LngLatLike): number | null {
-        if (!this.terrain) {
-            return null;
-        }
-        const elevation = this.transform.getElevation(LngLat.convert(lngLatLike), this.terrain);
-        /**
-         * Different zoomlevels with different terrain-tiles the elvation-values are not the same.
-         * map.transform.elevation variable with the center-altitude.
-         * In maplibre the proj-matrix is translated by this value in negative z-direction.
-         * So we need to add this value to the elevation to get the correct value.
-         */
-        return elevation - this.transform.elevation;
-    }
 }
 
 // In debug builds, check that camera change events are fired in the correct order.
@@ -1454,7 +1533,7 @@ function addAssertions(camera: Camera) { //eslint-disable-line
         });
 
         // Canary used to test whether this function is stripped in prod build
-        canary = 'canary debug run';
+        canary = 'canary debug run'; // eslint-disable-line
     });
 }
 

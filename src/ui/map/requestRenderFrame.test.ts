@@ -1,32 +1,18 @@
-import {createMap, beforeMapTest} from '../../util/test/util';
+import {createMap, setMatchMedia, setPerformance, setWebGlContext} from '../../util/test/util';
 
 beforeEach(() => {
-    beforeMapTest();
+    setPerformance();
+    setWebGlContext();
+    setMatchMedia();
 });
 
 describe('requestRenderFrame', () => {
 
-    test('Map#_requestRenderFrame schedules a new render frame if necessary', (done) => {
+    test('Map#_requestRenderFrame schedules a new render frame if necessary', () => {
         const map = createMap();
         const spy = jest.spyOn(map, 'triggerRepaint');
         map._requestRenderFrame(() => {});
-        expect(spy).toHaveBeenCalledTimes(0);
-
-        // wait for style to be loaded
-        map.once('data', () => {
-            spy.mockReset();
-            map._requestRenderFrame(() => {});
-            expect(spy).toHaveBeenCalledTimes(1);
-            map.remove();
-            done();
-        });
-    });
-
-    test('Map#_requestRenderFrame should not schedule a render frame before style load', () => {
-        const map = createMap();
-        const spy = jest.spyOn(map, 'triggerRepaint');
-        map._requestRenderFrame(() => {});
-        expect(spy).toHaveBeenCalledTimes(0);
+        expect(spy).toHaveBeenCalledTimes(1);
         map.remove();
     });
 

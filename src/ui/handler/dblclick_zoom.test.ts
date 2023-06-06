@@ -1,5 +1,5 @@
 import simulate from '../../../test/unit/lib/simulate_interaction';
-import {beforeMapTest} from '../../util/test/util';
+import {setMatchMedia, setPerformance, setWebGlContext} from '../../util/test/util';
 import Map, {MapOptions} from '../map';
 
 function createMap() {
@@ -21,7 +21,9 @@ function simulateDoubleTap(map, delay = 100) {
 }
 
 beforeEach(() => {
-    beforeMapTest();
+    setPerformance();
+    setWebGlContext();
+    setMatchMedia();
 });
 
 describe('dbclick_zoom', () => {

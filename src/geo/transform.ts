@@ -3,7 +3,7 @@ import LngLatBounds from './lng_lat_bounds';
 import MercatorCoordinate, {mercatorXfromLng, mercatorYfromLat, mercatorZfromAltitude} from './mercator_coordinate';
 import Point from '@mapbox/point-geometry';
 import {wrap, clamp} from '../util/util';
-import {interpolates} from '@maplibre/maplibre-gl-style-spec';
+import {number as interpolate} from '../style-spec/util/interpolate';
 import EXTENT from '../data/extent';
 import {vec3, vec4, mat4, mat2, vec2} from 'gl-matrix';
 import {Aabb, Frustum} from '../util/primitives';
@@ -89,24 +89,20 @@ class Transform {
 
     clone(): Transform {
         const clone = new Transform(this._minZoom, this._maxZoom, this._minPitch, this.maxPitch, this._renderWorldCopies);
-        clone.apply(this);
+        clone.tileSize = this.tileSize;
+        clone.latRange = this.latRange;
+        clone.width = this.width;
+        clone.height = this.height;
+        clone._center = this._center;
+        clone._elevation = this._elevation;
+        clone.zoom = this.zoom;
+        clone.angle = this.angle;
+        clone._fov = this._fov;
+        clone._pitch = this._pitch;
+        clone._unmodified = this._unmodified;
+        clone._edgeInsets = this._edgeInsets.clone();
+        clone._calcMatrices();
         return clone;
-    }
-
-    apply(that: Transform) {
-        this.tileSize = that.tileSize;
-        this.latRange = that.latRange;
-        this.width = that.width;
-        this.height = that.height;
-        this._center = that._center;
-        this._elevation = that._elevation;
-        this.zoom = that.zoom;
-        this.angle = that.angle;
-        this._fov = that._fov;
-        this._pitch = that._pitch;
-        this._unmodified = that._unmodified;
-        this._edgeInsets = that._edgeInsets.clone();
-        this._calcMatrices();
     }
 
     get minZoom(): number { return this._minZoom; }
@@ -259,7 +255,7 @@ class Transform {
     }
 
     /**
-     * Helper method to update edge-insets in place
+     * Helper method to upadte edge-insets inplace
      *
      * @param {PaddingOptions} start the starting padding
      * @param {PaddingOptions} target the target padding
@@ -498,7 +494,7 @@ class Transform {
      * @returns {number} elevation in meters
      */
     getElevation(lnglat: LngLat, terrain: Terrain) {
-        const merc = MercatorCoordinate.fromLngLat(lnglat.wrap());
+        const merc = MercatorCoordinate.fromLngLat(lnglat);
         const worldSize = (1 << this.tileZoom) * EXTENT;
         const mercX = merc.x * worldSize, mercY = merc.y * worldSize;
         const tileX = Math.floor(mercX / EXTENT), tileY = Math.floor(mercY / EXTENT);
@@ -622,7 +618,7 @@ class Transform {
             }
         }
 
-        // calculate point-coordinate on flat earth
+        // calcuate point-coordinate on flat earth
         const targetZ = 0;
         // since we don't know the correct projected z value for the point,
         // unproject two points to get a line and then find the point on that
@@ -646,8 +642,8 @@ class Transform {
         const t = z0 === z1 ? 0 : (targetZ - z0) / (z1 - z0);
 
         return new MercatorCoordinate(
-            interpolates.number(x0, x1, t) / this.worldSize,
-            interpolates.number(y0, y1, t) / this.worldSize);
+            interpolate(x0, x1, t) / this.worldSize,
+            interpolate(y0, y1, t) / this.worldSize);
     }
 
     /**

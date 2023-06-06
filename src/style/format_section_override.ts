@@ -1,5 +1,8 @@
-import type {Expression, EvaluationContext, Type, ZoomConstantExpression} from '@maplibre/maplibre-gl-style-spec';
-import {NullType} from '@maplibre/maplibre-gl-style-spec';
+import type {Expression} from '../style-spec/expression/expression';
+import type EvaluationContext from '../style-spec/expression/evaluation_context';
+import type {Type} from '../style-spec/expression/types';
+import type {ZoomConstantExpression} from '../style-spec/expression';
+import {NullType} from '../style-spec/expression/types';
 import {PossiblyEvaluatedPropertyValue} from './properties';
 import {register} from '../util/web_worker_transfer';
 

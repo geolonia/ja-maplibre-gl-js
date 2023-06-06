@@ -10,4 +10,5 @@
  - [ ] Write tests for all new functionality.
  - [ ] Document any changes to public APIs.
  - [ ] Post benchmark scores.
+ - [ ] Manually test the debug page.
  - [ ] Add an entry to `CHANGELOG.md` under the `## main` section.

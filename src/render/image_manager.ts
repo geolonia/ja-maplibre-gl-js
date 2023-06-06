@@ -83,23 +83,7 @@ class ImageManager extends Evented {
     }
 
     getImage(id: string): StyleImage {
-        const image = this.images[id];
-
-        // Extract sprite image data on demand
-        if (image && !image.data && image.spriteData) {
-            const spriteData = image.spriteData;
-            image.data = new RGBAImage({
-                width: spriteData.width,
-                height: spriteData.height
-            }, spriteData.context.getImageData(
-                spriteData.x,
-                spriteData.y,
-                spriteData.width,
-                spriteData.height).data);
-            image.spriteData = null;
-        }
-
-        return image;
+        return this.images[id];
     }
 
     addImage(id: string, image: StyleImage) {
@@ -111,12 +95,11 @@ class ImageManager extends Evented {
 
     _validate(id: string, image: StyleImage) {
         let valid = true;
-        const data = image.data || image.spriteData;
-        if (!this._validateStretch(image.stretchX, data && data.width)) {
+        if (!this._validateStretch(image.stretchX, image.data && image.data.width)) {
             this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchX" value`)));
             valid = false;
         }
-        if (!this._validateStretch(image.stretchY, data && data.height)) {
+        if (!this._validateStretch(image.stretchY, image.data && image.data.height)) {
             this.fire(new ErrorEvent(new Error(`Image "${id}" has invalid "stretchY" value`)));
             valid = false;
         }
@@ -140,21 +123,18 @@ class ImageManager extends Evented {
     _validateContent(content: [number, number, number, number], image: StyleImage) {
         if (!content) return true;
         if (content.length !== 4) return false;
-        const spriteData = image.spriteData;
-        const width = (spriteData && spriteData.width) || image.data.width;
-        const height = (spriteData && spriteData.height) || image.data.height;
-        if (content[0] < 0 || width < content[0]) return false;
-        if (content[1] < 0 || height < content[1]) return false;
-        if (content[2] < 0 || width < content[2]) return false;
-        if (content[3] < 0 || height < content[3]) return false;
+        if (content[0] < 0 || image.data.width < content[0]) return false;
+        if (content[1] < 0 || image.data.height < content[1]) return false;
+        if (content[2] < 0 || image.data.width < content[2]) return false;
+        if (content[3] < 0 || image.data.height < content[3]) return false;
         if (content[2] < content[0]) return false;
         if (content[3] < content[1]) return false;
         return true;
     }
 
-    updateImage(id: string, image: StyleImage, validate = true) {
-        const oldImage = this.getImage(id);
-        if (validate && (oldImage.data.width !== image.data.width || oldImage.data.height !== image.data.height)) {
+    updateImage(id: string, image: StyleImage) {
+        const oldImage = this.images[id];
+        if (oldImage.data.width !== image.data.width || oldImage.data.height !== image.data.height) {
             throw new Error(`size mismatch between old image (${oldImage.data.width}x${oldImage.data.height}) and new image (${image.data.width}x${image.data.height}).`);
         }
         image.version = oldImage.version + 1;
@@ -200,14 +180,10 @@ class ImageManager extends Evented {
         const response = {};
 
         for (const id of ids) {
-            let image = this.getImage(id);
-
-            if (!image) {
+            if (!this.images[id]) {
                 this.fire(new Event('styleimagemissing', {id}));
-                //Try to acquire image again in case styleimagemissing has populated it
-                image = this.getImage(id);
             }
-
+            const image = this.images[id];
             if (image) {
                 // Clone the image so that our own copy of its ArrayBuffer doesn't get transferred.
                 response[id] = {
@@ -289,7 +265,7 @@ class ImageManager extends Evented {
             const {bin} = this.patterns[id];
             const x = bin.x + padding;
             const y = bin.y + padding;
-            const src = this.getImage(id).data;
+            const src = this.images[id].data;
             const w = src.width;
             const h = src.height;
 
@@ -316,7 +292,7 @@ class ImageManager extends Evented {
             if (this.callbackDispatchedThisFrame[id]) continue;
             this.callbackDispatchedThisFrame[id] = true;
 
-            const image = this.getImage(id);
+            const image = this.images[id];
             if (!image) warnOnce(`Image with ID: "${id}" was not found`);
 
             const updated = renderStyleImage(image);

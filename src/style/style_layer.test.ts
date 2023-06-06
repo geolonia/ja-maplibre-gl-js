@@ -1,7 +1,8 @@
 import createStyleLayer from './create_style_layer';
 import FillStyleLayer from './style_layer/fill_style_layer';
 import {extend} from '../util/util';
-import {Color, LayerSpecification} from '@maplibre/maplibre-gl-style-spec';
+import Color from '../style-spec/util/color';
+import {LayerSpecification} from '../style-spec/types.g';
 import EvaluationParameters from './evaluation_parameters';
 import {TransitionParameters} from './properties';
 import BackgroundStyleLayer from './style_layer/background_style_layer';

@@ -2,7 +2,7 @@ import Map from '../../ui/map';
 import DOM from '../../util/dom';
 import simulate from '../../../test/unit/lib/simulate_interaction';
 import {extend} from '../../util/util';
-import {beforeMapTest} from '../../util/test/util';
+import {setMatchMedia, setPerformance, setWebGlContext} from '../../util/test/util';
 
 function createMap(options?) {
     return new Map(extend({
@@ -11,7 +11,9 @@ function createMap(options?) {
 }
 
 beforeEach(() => {
-    beforeMapTest();
+    setPerformance();
+    setWebGlContext();
+    setMatchMedia();
 });
 
 describe('keyboard', () => {

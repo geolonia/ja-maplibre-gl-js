@@ -3,10 +3,12 @@ import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
+import json from '@rollup/plugin-json';
+import {terser} from 'rollup-plugin-terser';
+import minifyStyleSpec from './rollup_plugin_minify_style_spec';
 import strip from '@rollup/plugin-strip';
 import {Plugin} from 'rollup';
-import json from '@rollup/plugin-json';
+import {importAssertionsPlugin} from 'rollup-plugin-import-assert';
 
 // Common set of plugins/transformations shared across different rollup
 // builds (main maplibre bundle, style-spec package, benchmarks bundle)
@@ -17,6 +19,8 @@ export const nodeResolve = resolve({
 });
 
 export const plugins = (production: boolean): Plugin[] => [
+    minifyStyleSpec(),
+    importAssertionsPlugin(),
     json(),
     // https://github.com/zaach/jison/issues/351
     replace({
@@ -36,8 +40,7 @@ export const plugins = (production: boolean): Plugin[] => [
             // eslint-disable-next-line camelcase
             pure_getters: true,
             passes: 3
-        },
-        sourceMap: true
+        }
     }),
     nodeResolve,
     typescript(),

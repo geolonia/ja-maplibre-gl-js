@@ -1,4 +1,4 @@
-import {createMap as globalCreateMap, beforeMapTest} from '../util/test/util';
+import {createMap as globalCreateMap, setPerformance, setWebGlContext} from '../util/test/util';
 import Marker from './marker';
 import Popup from './popup';
 import LngLat from '../geo/lng_lat';
@@ -15,7 +15,8 @@ function createMap(options = {}) {
 }
 
 beforeEach(() => {
-    beforeMapTest();
+    setWebGlContext();
+    setPerformance();
 });
 
 describe('marker', () => {

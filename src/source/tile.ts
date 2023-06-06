@@ -3,7 +3,7 @@ import {deserialize as deserializeBucket} from '../data/bucket';
 import '../data/feature_index';
 import type FeatureIndex from '../data/feature_index';
 import GeoJSONFeature from '../util/vectortile_to_geojson';
-import {featureFilter} from '@maplibre/maplibre-gl-style-spec';
+import featureFilter from '../style-spec/feature_filter';
 import SymbolBucket from '../data/bucket/symbol_bucket';
 import {CollisionBoxArray} from '../data/array_types.g';
 import Texture from '../render/texture';
@@ -29,7 +29,7 @@ import type Framebuffer from '../gl/framebuffer';
 import type Transform from '../geo/transform';
 import type {LayerFeatureStates} from './source_state';
 import type {Cancelable} from '../types/cancelable';
-import type {FilterSpecification} from '@maplibre/maplibre-gl-style-spec';
+import type {FilterSpecification} from '../style-spec/types.g';
 import type Point from '@mapbox/point-geometry';
 import {mat4} from 'gl-matrix';
 import type {VectorTileLayer} from '@mapbox/vector-tile';
@@ -64,8 +64,8 @@ class Tile {
     expirationTime: any;
     expiredRequestCount: number;
     state: TileState;
-    timeAdded: number = 0;
-    fadeEndTime: number = 0;
+    timeAdded: any;
+    fadeEndTime: any;
     collisionBoxArray: CollisionBoxArray;
     redoWhenDone: boolean;
     showCollisionBoxes: boolean;
@@ -125,10 +125,8 @@ class Tile {
 
     registerFadeDuration(duration: number) {
         const fadeEndTime = duration + this.timeAdded;
-
-        if (fadeEndTime < this.fadeEndTime) {
-            return;
-        }
+        if (fadeEndTime < browser.now()) return;
+        if (this.fadeEndTime && fadeEndTime < this.fadeEndTime) return;
 
         this.fadeEndTime = fadeEndTime;
     }

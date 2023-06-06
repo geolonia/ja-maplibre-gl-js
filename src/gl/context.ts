@@ -7,14 +7,14 @@ import StencilMode from './stencil_mode';
 import ColorMode from './color_mode';
 import CullFaceMode from './cull_face_mode';
 import {deepEqual} from '../util/util';
-import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, ProgramValue, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArray, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, BlendEquation, CullFace, CullFaceSide, FrontFace, ProgramValue, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha, PixelStoreUnpackFlipY} from './value';
 
 import type {TriangleIndexArray, LineIndexArray, LineStripIndexArray} from '../data/index_array_type';
 import type {
     StructArray,
     StructArrayMember
 } from '../util/struct_array';
-import type {Color} from '@maplibre/maplibre-gl-style-spec';
+import type Color from '../style-spec/util/color';
 
 type ClearArgs = {
     color?: Color;
@@ -23,8 +23,8 @@ type ClearArgs = {
 };
 
 class Context {
-    gl: WebGL2RenderingContext;
-
+    gl: WebGLRenderingContext;
+    extVertexArrayObject: any;
     currentNumAttributes: number;
     maxTextureSize: number;
 
@@ -55,20 +55,21 @@ class Context {
     bindTexture: BindTexture;
     bindVertexBuffer: BindVertexBuffer;
     bindElementBuffer: BindElementBuffer;
-    bindVertexArray: BindVertexArray;
+    bindVertexArrayOES: BindVertexArrayOES;
     pixelStoreUnpack: PixelStoreUnpack;
     pixelStoreUnpackPremultiplyAlpha: PixelStoreUnpackPremultiplyAlpha;
     pixelStoreUnpackFlipY: PixelStoreUnpackFlipY;
 
-    // eslint-disable-next-line camelcase
-    extTextureFilterAnisotropic: EXT_texture_filter_anisotropic | null;
-    extTextureFilterAnisotropicMax?: GLfloat;
-    HALF_FLOAT?: GLenum;
-    RGBA16F?: GLenum;
-    RGB16F?: GLenum;
+    extTextureFilterAnisotropic: any;
+    extTextureFilterAnisotropicMax: any;
+    extTextureHalfFloat: any;
+    extRenderToTextureHalfFloat: any;
+    extTimerQuery: any;
 
-    constructor(gl: WebGL2RenderingContext) {
+    constructor(gl: WebGLRenderingContext) {
         this.gl = gl;
+        this.extVertexArrayObject = this.gl.getExtension('OES_vertex_array_object');
+
         this.clearColor = new ClearColor(this);
         this.clearDepth = new ClearDepth(this);
         this.clearStencil = new ClearStencil(this);
@@ -96,23 +97,28 @@ class Context {
         this.bindTexture = new BindTexture(this);
         this.bindVertexBuffer = new BindVertexBuffer(this);
         this.bindElementBuffer = new BindElementBuffer(this);
-        this.bindVertexArray = new BindVertexArray(this);
+        this.bindVertexArrayOES = this.extVertexArrayObject && new BindVertexArrayOES(this);
         this.pixelStoreUnpack = new PixelStoreUnpack(this);
         this.pixelStoreUnpackPremultiplyAlpha = new PixelStoreUnpackPremultiplyAlpha(this);
         this.pixelStoreUnpackFlipY = new PixelStoreUnpackFlipY(this);
 
-        this.extTextureFilterAnisotropic = gl.getExtension('EXT_texture_filter_anisotropic');
+        this.extTextureFilterAnisotropic = (
+            gl.getExtension('EXT_texture_filter_anisotropic') ||
+            gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+            gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+        );
         if (this.extTextureFilterAnisotropic) {
             this.extTextureFilterAnisotropicMax = gl.getParameter(this.extTextureFilterAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
         }
 
-        this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-        this.HALF_FLOAT = gl.HALF_FLOAT;
+        this.extTextureHalfFloat = gl.getExtension('OES_texture_half_float');
+        if (this.extTextureHalfFloat) {
+            gl.getExtension('OES_texture_half_float_linear');
+            this.extRenderToTextureHalfFloat = gl.getExtension('EXT_color_buffer_half_float');
+        }
 
-        gl.getExtension('EXT_color_buffer_half_float');
-        gl.getExtension('EXT_color_buffer_float');
-        this.RGBA16F = gl.RGBA16F;
-        this.RGB16F = gl.RGB16F;
+        this.extTimerQuery = gl.getExtension('EXT_disjoint_timer_query');
+        this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     }
 
     setDefault() {
@@ -173,7 +179,9 @@ class Context {
         this.bindTexture.dirty = true;
         this.bindVertexBuffer.dirty = true;
         this.bindElementBuffer.dirty = true;
-        this.bindVertexArray.dirty = true;
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.dirty = true;
+        }
         this.pixelStoreUnpack.dirty = true;
         this.pixelStoreUnpackPremultiplyAlpha.dirty = true;
         this.pixelStoreUnpackFlipY.dirty = true;
@@ -198,14 +206,13 @@ class Context {
         return rbo;
     }
 
-    createFramebuffer(width: number, height: number, hasDepth: boolean, hasStencil: boolean) {
-        return new Framebuffer(this, width, height, hasDepth, hasStencil);
+    createFramebuffer(width: number, height: number, hasDepth: boolean) {
+        return new Framebuffer(this, width, height, hasDepth);
     }
 
     clear({
         color,
-        depth,
-        stencil
+        depth
     }: ClearArgs) {
         const gl = this.gl;
         let mask = 0;
@@ -220,18 +227,19 @@ class Context {
             mask |= gl.DEPTH_BUFFER_BIT;
 
             // Workaround for platforms where clearDepth doesn't seem to work
-            // without resetting the depthRange. See https://github.com/mapbox/mapbox-gl-js/issues/3437
+            // without reseting the depthRange. See https://github.com/mapbox/mapbox-gl-js/issues/3437
             this.depthRange.set([0, 1]);
 
             this.clearDepth.set(depth);
             this.depthMask.set(true);
         }
 
-        if (typeof stencil !== 'undefined') {
-            mask |= gl.STENCIL_BUFFER_BIT;
-            this.clearStencil.set(stencil);
-            this.stencilMask.set(0xFF);
-        }
+        // See note in Painter#clearStencil: implement this the easy way once GPU bug/workaround is fixed upstream
+        // if (typeof stencil !== 'undefined') {
+        //     mask |= gl.STENCIL_BUFFER_BIT;
+        //     this.clearStencil.set(stencil);
+        //     this.stencilMask.set(0xFF);
+        // }
 
         gl.clear(mask);
     }
@@ -284,18 +292,12 @@ class Context {
         this.colorMask.set(colorMode.mask);
     }
 
-    createVertexArray(): WebGLVertexArrayObject | undefined {
-        return this.gl.createVertexArray();
-    }
-
-    deleteVertexArray(x: WebGLVertexArrayObject | undefined) {
-        return this.gl.deleteVertexArray(x);
-    }
-
     unbindVAO() {
         // Unbinding the VAO prevents other things (custom layers, new buffer creation) from
         // unintentionally changing the state of the last VAO used.
-        this.bindVertexArray.set(null);
+        if (this.extVertexArrayObject) {
+            this.bindVertexArrayOES.set(null);
+        }
     }
 }
 

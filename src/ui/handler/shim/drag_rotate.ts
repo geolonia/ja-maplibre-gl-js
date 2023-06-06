@@ -1,4 +1,4 @@
-import type {MousePitchHandler, MouseRotateHandler} from '../mouse';
+import type {MouseRotateHandler, MousePitchHandler} from '../mouse';
 
 /**
  * The `DragRotateHandler` allows the user to rotate the map by clicking and

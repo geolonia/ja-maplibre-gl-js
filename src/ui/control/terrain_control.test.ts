@@ -1,5 +1,5 @@
 import TerrainControl from './terrain_control';
-import {createMap as globalCreateMap, beforeMapTest} from '../../util/test/util';
+import {createMap as globalCreateMap, setWebGlContext, setPerformance, setMatchMedia} from '../../util/test/util';
 
 function createMap() {
 
@@ -27,7 +27,9 @@ function createMap() {
 let map;
 
 beforeEach(() => {
-    beforeMapTest();
+    setWebGlContext();
+    setPerformance();
+    setMatchMedia();
     map = createMap();
 });
 

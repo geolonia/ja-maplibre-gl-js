@@ -1,7 +1,7 @@
 import Benchmark from '../lib/benchmark';
 
-import {featureFilter as createFilter} from '@maplibre/maplibre-gl-style-spec';
-import filters from '../data/filters.json' assert {type: 'json'};
+import createFilter from '../../../src/style-spec/feature_filter';
+import filters from '../data/filters.json';
 
 export default class FilterCreate extends Benchmark {
     bench() {

@@ -10,16 +10,16 @@ uniform vec3 u_lightcolor;
 uniform lowp vec3 u_lightpos;
 uniform lowp float u_lightintensity;
 
-in vec2 a_pos;
-in vec4 a_normal_ed;
+attribute vec2 a_pos;
+attribute vec4 a_normal_ed;
 
 #ifdef TERRAIN3D
-    in vec2 a_centroid;
+    attribute vec2 a_centroid;
 #endif
 
-out vec2 v_pos_a;
-out vec2 v_pos_b;
-out vec4 v_lighting;
+varying vec2 v_pos_a;
+varying vec2 v_pos_b;
+varying vec4 v_lighting;
 
 #pragma mapbox: define lowp float base
 #pragma mapbox: define lowp float height
@@ -52,20 +52,16 @@ void main() {
     vec2 display_size_b = (pattern_br_b - pattern_tl_b) / pixel_ratio_to;
 
     #ifdef TERRAIN3D
-	// Raise the "ceiling" of elements by the elevation of the centroid, in meters.
-        float height_terrain3d_offset = get_elevation(a_centroid);
-	// To avoid having buildings "hang above a slope", create a "basement"
-	// by lowering the "floor" of ground-level (and below) elements.
-	// This is in addition to the elevation of the centroid, in meters.
-        float base_terrain3d_offset = height_terrain3d_offset - (base > 0.0 ? 0.0 : 10.0);
+        // To avoid floating buildings in 3d-terrain, especially in heavy terrain,
+        // render the buildings a little below terrain. The unit is meter.
+        float baseDelta = 10.0;
+        float ele = get_elevation(a_centroid);
     #else
-        float height_terrain3d_offset = 0.0;
-        float base_terrain3d_offset = 0.0;
+        float baseDelta = 0.0;
+        float ele = 0.0;
     #endif
-    // Sub-terranian "floors and ceilings" are clamped to ground-level.
-    // 3D Terrain offsets, if applicable, are applied on the result.
-    base = max(0.0, base) + base_terrain3d_offset;
-    height = max(0.0, height) + height_terrain3d_offset;
+    base = max(0.0, ele + base - baseDelta);
+    height = max(0.0, ele + height);
 
     float t = mod(normal.x, 2.0);
     float z = t > 0.0 ? height : base;

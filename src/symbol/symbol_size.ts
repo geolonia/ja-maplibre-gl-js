@@ -1,15 +1,14 @@
-import {Interpolate, interpolates} from '@maplibre/maplibre-gl-style-spec';
+import {number as interpolate} from '../style-spec/util/interpolate';
+import Interpolate from '../style-spec/expression/definitions/interpolate';
 import {clamp} from '../util/util';
 import EvaluationParameters from '../style/evaluation_parameters';
 
 import type {PropertyValue, PossiblyEvaluatedPropertyValue} from '../style/properties';
-import type {InterpolationType} from '@maplibre/maplibre-gl-style-spec';
+import type {InterpolationType} from '../style-spec/expression/definitions/interpolate';
 
-const MAX_GLYPH_ICON_SIZE = 255;
 const SIZE_PACK_FACTOR = 128;
-const MAX_PACKED_SIZE = MAX_GLYPH_ICON_SIZE * SIZE_PACK_FACTOR;
 
-export {getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR, MAX_GLYPH_ICON_SIZE, MAX_PACKED_SIZE};
+export {getSizeData, evaluateSizeForFeature, evaluateSizeForZoom, SIZE_PACK_FACTOR};
 
 export type SizeData = {
     kind: 'constant';
@@ -95,7 +94,7 @@ function evaluateSizeForFeature(sizeData: SizeData,
     if (sizeData.kind === 'source') {
         return lowerSize / SIZE_PACK_FACTOR;
     } else if (sizeData.kind === 'composite') {
-        return interpolates.number(lowerSize / SIZE_PACK_FACTOR, upperSize / SIZE_PACK_FACTOR, uSizeT);
+        return interpolate(lowerSize / SIZE_PACK_FACTOR, upperSize / SIZE_PACK_FACTOR, uSizeT);
     }
     return uSize;
 }
@@ -119,7 +118,7 @@ function evaluateSizeForZoom(sizeData: SizeData, zoom: number): EvaluatedZoomSiz
             Interpolate.interpolationFactor(interpolationType, zoom, minZoom, maxZoom), 0, 1);
 
         if (sizeData.kind === 'camera') {
-            uSize = interpolates.number(sizeData.minSize, sizeData.maxSize, t);
+            uSize = interpolate(sizeData.minSize, sizeData.maxSize, t);
         } else {
             uSizeT = t;
         }

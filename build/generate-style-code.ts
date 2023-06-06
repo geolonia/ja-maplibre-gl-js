@@ -2,7 +2,7 @@
 
 import * as fs from 'fs';
 
-import {v8} from '@maplibre/maplibre-gl-style-spec';
+import spec from '../src/style-spec/reference/v8.json' assert {type: 'json'};
 
 function camelCase(str: string): string {
     return str.replace(/-(.)/g, (_, x) => {
@@ -29,8 +29,6 @@ function nativeType(property) {
             return 'Color';
         case 'padding':
             return 'Padding';
-        case 'sprite':
-            return 'Sprite';
         case 'formatted':
             return 'Formatted';
         case 'resolvedImage':
@@ -93,8 +91,6 @@ function runtimeType(property) {
             return 'ColorType';
         case 'padding':
             return 'PaddingType';
-        case 'sprite':
-            return 'SpriteType';
         case 'formatted':
             return 'FormattedType';
         case 'Image':
@@ -137,20 +133,20 @@ function propertyValue(property, type) {
     }
 }
 
-const layers = Object.keys(v8.layer.type.values).map((type) => {
-    const layoutProperties = Object.keys(v8[`layout_${type}`]).reduce((memo, name) => {
+const layers = Object.keys(spec.layer.type.values).map((type) => {
+    const layoutProperties = Object.keys(spec[`layout_${type}`]).reduce((memo, name) => {
         if (name !== 'visibility') {
-            v8[`layout_${type}`][name].name = name;
-            v8[`layout_${type}`][name].layerType = type;
-            memo.push(v8[`layout_${type}`][name]);
+            spec[`layout_${type}`][name].name = name;
+            spec[`layout_${type}`][name].layerType = type;
+            memo.push(spec[`layout_${type}`][name]);
         }
         return memo;
     }, []);
 
-    const paintProperties = Object.keys(v8[`paint_${type}`]).reduce((memo, name) => {
-        v8[`paint_${type}`][name].name = name;
-        v8[`paint_${type}`][name].layerType = type;
-        memo.push(v8[`paint_${type}`][name]);
+    const paintProperties = Object.keys(spec[`paint_${type}`]).reduce((memo, name) => {
+        spec[`paint_${type}`][name].name = name;
+        spec[`paint_${type}`][name].layerType = type;
+        memo.push(spec[`paint_${type}`][name]);
         return memo;
     }, []);
 
@@ -169,7 +165,7 @@ function emitlayerProperties(locals) {
         `// This file is generated. Edit build/generate-style-code.ts, then run 'npm run codegen'.
 /* eslint-disable */
 
-import {latest as styleSpec} from '@maplibre/maplibre-gl-style-spec';
+import styleSpec from '../../style-spec/reference/latest';
 
 import {
     Properties,
@@ -182,23 +178,22 @@ import {
     CrossFaded
 } from '../properties';
 
-import type {Color} from '@maplibre/maplibre-gl-style-spec';
-import type {Padding} from '@maplibre/maplibre-gl-style-spec';
+import type Color from '../../style-spec/util/color';
+import type Padding from '../../style-spec/util/padding';
 
-import type {Formatted} from '@maplibre/maplibre-gl-style-spec';
+import type Formatted from '../../style-spec/expression/types/formatted';
 
-import type {ResolvedImage} from '@maplibre/maplibre-gl-style-spec';
-import {StylePropertySpecification} from '@maplibre/maplibre-gl-style-spec';
+import type ResolvedImage from '../../style-spec/expression/types/resolved_image';
+import {StylePropertySpecification} from '../../style-spec/style-spec';
 `);
 
     const overridables = paintProperties.filter(p => p.overridable);
     if (overridables.length) {
-        const overridesArray = `import {
-            ${overridables.reduce((imports, prop) => { imports.push(runtimeType(prop)); return imports; }, []).join(',\n    ')}
-        } from '@maplibre/maplibre-gl-style-spec';
-        `;
-        console.log(overridesArray);
-        output.push(overridesArray);
+        output.push(
+            `import {
+    ${overridables.reduce((imports, prop) => { imports.push(runtimeType(prop)); return imports; }, []).join(',\n    ')}
+} from '../../style-spec/expression/types';
+`);
     }
 
     if (layoutProperties.length) {
@@ -223,8 +218,7 @@ export type ${layerType}LayoutPropsPossiblyEvaluated = {`);
         output.push(
             `};
 
-let layout: Properties<${layerType}LayoutProps>;
-const getLayout = () => layout = layout || new Properties({`);
+const layout: Properties<${layerType}LayoutProps> = new Properties({`);
 
         for (const property of layoutProperties) {
             output.push(
@@ -264,8 +258,7 @@ export type ${layerType}PaintPropsPossiblyEvaluated = {`);
 
     output.push(
         `
-let paint: Properties<${layerType}PaintProps>;
-const getPaint = () => paint = paint || new Properties({`);
+const paint: Properties<${layerType}PaintProps> = new Properties({`);
 
     for (const property of paintProperties) {
         output.push(
@@ -275,7 +268,9 @@ const getPaint = () => paint = paint || new Properties({`);
     output.push(
         `});
 
-export default ({ get paint() { return getPaint() }${layoutProperties.length ? ', get layout() { return getLayout() }' : ''} });`);
+export default ({ paint${layoutProperties.length ? ', layout' : ''} } as {
+    paint: Properties<${layerType}PaintProps>${layoutProperties.length ? `,\n    layout: Properties<${layerType}LayoutProps>` : ''}
+});`);
 
     return output.join('\n');
 }

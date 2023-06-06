@@ -97,7 +97,8 @@ class PauseablePlacement {
         const startTime = browser.now();
 
         const shouldPausePlacement = () => {
-            return this._forceFullPlacement ? false : (browser.now() - startTime) > 2;
+            const elapsedTime = browser.now() - startTime;
+            return this._forceFullPlacement ? false : elapsedTime > 2;
         };
 
         while (this._currentPlacementIndex >= 0) {

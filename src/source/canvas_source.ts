@@ -3,8 +3,8 @@ import ImageSource from './image_source';
 import rasterBoundsAttributes from '../data/raster_bounds_attributes';
 import SegmentVector from '../data/segment';
 import Texture from '../render/texture';
-import {Event, ErrorEvent} from '../util/evented';
-import {ValidationError} from '@maplibre/maplibre-gl-style-spec';
+import {ErrorEvent} from '../util/evented';
+import ValidationError from '../style-spec/error/validation_error';
 
 import type Map from '../ui/map';
 import type Dispatcher from '../util/dispatcher';
@@ -28,7 +28,7 @@ export type CanvasSourceSpecification = {
  */
 
 /**
- * A data source containing the contents of an HTML canvas. See {@link CanvasSourceOptions} for detailed documentation of options.
+ * HTML Canvas コンテンツを含むデータソース。オプションについての詳細なドキュメンテーションは {@link CanvasSourceOptions} をご覧ください。
  *
  * @example
  * // add to map
@@ -139,6 +139,11 @@ class CanvasSource extends ImageSource {
         this._finishLoading();
     }
 
+    // /**
+    //  * Returns the HTML `canvas` element.
+    //  *
+    //  * @returns {HTMLCanvasElement} The HTML `canvas` element.
+    //  */
     /**
      * Returns the HTML `canvas` element.
      *
@@ -206,18 +211,12 @@ class CanvasSource extends ImageSource {
             this.texture.update(this.canvas, {premultiply: true});
         }
 
-        let newTilesLoaded = false;
         for (const w in this.tiles) {
             const tile = this.tiles[w];
             if (tile.state !== 'loaded') {
                 tile.state = 'loaded';
                 tile.texture = this.texture;
-                newTilesLoaded = true;
             }
-        }
-
-        if (newTilesLoaded) {
-            this.fire(new Event('data', {dataType: 'source', sourceDataType: 'idle', sourceId: this.id}));
         }
     }
 

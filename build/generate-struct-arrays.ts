@@ -6,7 +6,7 @@
  *    - Particular, named StructArray subclasses, when fancy struct accessors are needed (e.g. CollisionBoxArray)
  */
 
-'use strict';
+'use strict'; // eslint-disable-line strict
 
 import * as fs from 'fs';
 import * as util from '../src/util/util';

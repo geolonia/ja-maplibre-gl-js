@@ -1,7 +1,7 @@
 import Map from '../../ui/map';
 import {extend} from '../../util/util';
 import Dispatcher from '../../util/dispatcher';
-import {setWebGlContext} from './mock_webgl';
+import gl from 'gl';
 
 export function createMap(options?, callback?) {
     const container = window.document.createElement('div');
@@ -39,13 +39,30 @@ export function equalWithPrecision(test, expected, actual, multiplier, message, 
     return test.equal(expectedRounded, actualRounded, message, extra);
 }
 
+// Add webgl context with the supplied GL
+export function setWebGlContext() {
+    const originalGetContext = global.HTMLCanvasElement.prototype.getContext;
+
+    function imitateWebGlGetContext(type, attributes) {
+        if (type === 'webgl') {
+            if (!this._webGLContext) {
+                this._webGLContext = gl(this.width, this.height, attributes);
+            }
+            return this._webGLContext;
+        }
+        // Fallback to existing HTMLCanvasElement getContext behaviour
+        return originalGetContext.call(this, type, attributes);
+    }
+    global.HTMLCanvasElement.prototype.getContext = imitateWebGlGetContext;
+}
+
 // mock failed webgl context by dispatching "webglcontextcreationerror" event
 // and returning null
 export function setErrorWebGlContext() {
     const originalGetContext = global.HTMLCanvasElement.prototype.getContext;
 
     function imitateErrorWebGlGetContext(type, attributes) {
-        if (type === 'webgl2' || type === 'webgl') {
+        if (type === 'webgl') {
             const errorEvent = new Event('webglcontextcreationerror');
             (errorEvent as any).statusMessage = 'mocked webglcontextcreationerror message';
             this.dispatchEvent(errorEvent);
@@ -80,21 +97,6 @@ export function setMatchMedia() {
     });
 }
 
-function setResizeObserver() {
-    global.ResizeObserver = jest.fn().mockImplementation(() => ({
-        observe: jest.fn(),
-        unobserve: jest.fn(),
-        disconnect: jest.fn(),
-    }));
-}
-
-export function beforeMapTest() {
-    setPerformance();
-    setWebGlContext();
-    setMatchMedia();
-    setResizeObserver();
-}
-
 export function getWrapDispatcher() {
     const wrapDispatcher = (dispatcher) => {
         return {
@@ -125,10 +127,8 @@ export function stubAjaxGetImage(createImageBitmap) {
 
     // eslint-disable-next-line accessor-pairs
     Object.defineProperty(global.Image.prototype, 'src', {
-        set(url: string) {
-            if (url === 'error') {
-                this.onerror();
-            } else this.onload();
+        set(_) {
+            this.onload();
         }
     });
 }

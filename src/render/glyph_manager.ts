@@ -100,11 +100,6 @@ export default class GlyphManager {
                 return;
             }
 
-            if (!this.url) {
-                callback(new Error('glyphsUrl is not set'));
-                return;
-            }
-
             let requests = entry.requests[range];
             if (!requests) {
                 requests = entry.requests[range] = [];

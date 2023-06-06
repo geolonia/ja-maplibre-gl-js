@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import {StyleSpecification} from '@maplibre/maplibre-gl-style-spec';
+import {StyleSpecification} from '../../../src/style-spec/types.g';
 
 export default function localizeURLs(style: any, port: number, baseTestsDir: string) {
     localizeStyleURLs(style, port);
@@ -86,15 +86,8 @@ function localizeStyleURLs(style: StyleSpecification, port: number) {
     }
 
     if (style.sprite) {
-        if (typeof style.sprite === 'string') {
-            style.sprite = localizeMapboxSpriteURL(style.sprite, port);
-            style.sprite = localizeURL(style.sprite, port);
-        } else if (Array.isArray(style.sprite)) {
-            for (const sprite of style.sprite) {
-                sprite.url = localizeMapboxSpriteURL(sprite.url, port);
-                sprite.url = localizeURL(sprite.url, port);
-            }
-        }
+        style.sprite = localizeMapboxSpriteURL(style.sprite, port);
+        style.sprite = localizeURL(style.sprite, port);
     }
 
     if (style.glyphs) {

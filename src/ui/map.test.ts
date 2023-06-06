@@ -1,12 +1,12 @@
 import Map, {MapOptions} from './map';
-import {createMap, setErrorWebGlContext, beforeMapTest} from '../util/test/util';
+import {createMap, setMatchMedia, setPerformance, setWebGlContext, setErrorWebGlContext} from '../util/test/util';
 import LngLat from '../geo/lng_lat';
 import Tile from '../source/tile';
 import {OverscaledTileID} from '../source/tile_id';
 import {Event, ErrorEvent} from '../util/evented';
 import simulate from '../../test/unit/lib/simulate_interaction';
 import {fixedLngLat, fixedNum} from '../../test/unit/lib/fixed';
-import {LayerSpecification, SourceSpecification, StyleSpecification} from '@maplibre/maplibre-gl-style-spec';
+import {LayerSpecification, SourceSpecification, StyleSpecification} from '../style-spec/types.g';
 import {RequestTransformFunction} from '../util/request_manager';
 import {extend} from '../util/util';
 import {LngLatBoundsLike} from '../geo/lng_lat_bounds';
@@ -17,10 +17,6 @@ import {CameraOptions} from './camera';
 import Terrain, {} from '../render/terrain';
 import {mercatorZfromAltitude} from '../geo/mercator_coordinate';
 import Transform from '../geo/transform';
-import {StyleImageInterface} from '../style/style_image';
-import Style from '../style/style';
-import {MapSourceDataEvent} from './events';
-import config from '../util/config';
 
 function createStyleSource() {
     return {
@@ -35,7 +31,9 @@ function createStyleSource() {
 let server: FakeServer;
 
 beforeEach(() => {
-    beforeMapTest();
+    setPerformance();
+    setWebGlContext();
+    setMatchMedia();
     global.fetch = null;
     server = fakeServer.create();
 });
@@ -162,55 +160,6 @@ describe('Map', () => {
             map.setStyle(createStyle());
         }, 1);
 
-    });
-
-    describe('#mapOptions', () => {
-        test('maxTileCacheZoomLevels: Default value is set', () => {
-            const map = createMap();
-            expect(map._maxTileCacheZoomLevels).toBe(config.MAX_TILE_CACHE_ZOOM_LEVELS);
-        });
-
-        test('maxTileCacheZoomLevels: Value can be set via map options', () => {
-            const map = createMap({maxTileCacheZoomLevels: 1});
-            expect(map._maxTileCacheZoomLevels).toBe(1);
-        });
-
-        test('Style validation is enabled by default', () => {
-            let validationOption = false;
-            jest.spyOn(Style.prototype, 'loadJSON').mockImplementationOnce((styleJson, options) => {
-                validationOption = options.validate;
-            });
-            createMap();
-            expect(validationOption).toBeTruthy();
-        });
-
-        test('Style validation disabled using mapOptions', () => {
-            let validationOption = true;
-            jest.spyOn(Style.prototype, 'loadJSON').mockImplementationOnce((styleJson, options) => {
-                validationOption = options.validate;
-            });
-            createMap({validateStyle: false});
-
-            expect(validationOption).toBeFalsy();
-        });
-
-        test('fadeDuration is set after first idle event', async () => {
-            let idleTriggered = false;
-            const fadeDuration = 100;
-            const spy = jest.spyOn(Style.prototype, 'update').mockImplementation((parameters: EvaluationParameters) => {
-                if (!idleTriggered) {
-                    expect(parameters.fadeDuration).toBe(0);
-                } else {
-                    expect(parameters.fadeDuration).toBe(fadeDuration);
-                }
-            });
-            const style = createStyle();
-            const map = createMap({style, fadeDuration});
-            await map.once('idle');
-            idleTriggered = true;
-            map.zoomTo(0.5, {duration: 100});
-            spy.mockReset();
-        });
     });
 
     describe('#setStyle', () => {
@@ -341,25 +290,6 @@ describe('Map', () => {
             jest.spyOn(style, '_remove');
             map.setStyle(null);
             expect(style._remove).toHaveBeenCalledTimes(1);
-        });
-
-        test('passing null releases the worker', () => {
-            const map = createMap();
-            const spyWorkerPoolAcquire = jest.spyOn(map.style.dispatcher.workerPool, 'acquire');
-            const spyWorkerPoolRelease = jest.spyOn(map.style.dispatcher.workerPool, 'release');
-
-            map.setStyle({version: 8, sources: {}, layers: []}, {diff: false});
-            expect(spyWorkerPoolAcquire).toHaveBeenCalledTimes(1);
-            expect(spyWorkerPoolRelease).toHaveBeenCalledTimes(0);
-
-            spyWorkerPoolAcquire.mockClear();
-            map.setStyle(null);
-            expect(spyWorkerPoolAcquire).toHaveBeenCalledTimes(0);
-            expect(spyWorkerPoolRelease).toHaveBeenCalledTimes(1);
-
-            // Cleanup
-            spyWorkerPoolAcquire.mockClear();
-            spyWorkerPoolRelease.mockClear();
         });
 
         test('transformStyle should copy the source and the layer into next style', done => {
@@ -505,17 +435,6 @@ describe('Map', () => {
             });
             map.on('load', () => done());
         });
-
-        test('Override default style validation', () => {
-            let validationOption = true;
-            jest.spyOn(Style.prototype, 'loadJSON').mockImplementationOnce((styleJson, options) => {
-                validationOption = options.validate;
-            });
-            const map = createMap({style: null});
-            map.setStyle({version: 8, sources: {}, layers: []}, {validate: false});
-
-            expect(validationOption).toBeFalsy();
-        });
     });
 
     describe('#setTransformRequest', () => {
@@ -543,28 +462,9 @@ describe('Map', () => {
 
             map.on('load', () => {
                 map.on('data', (e) => {
-                    if (e.dataType === 'source' && e.sourceDataType === 'idle') {
+                    if (e.dataType === 'source' && e.sourceDataType === 'metadata') {
                         expect(map.isSourceLoaded('geojson')).toBe(true);
                         done();
-                    }
-                });
-                map.addSource('geojson', createStyleSource());
-                expect(map.isSourceLoaded('geojson')).toBe(false);
-            });
-        });
-
-        test('Map#isSourceLoaded (equivalent to event.isSourceLoaded)', done => {
-            const style = createStyle();
-            const map = createMap({style});
-
-            map.on('load', () => {
-                map.on('data', (e) => {
-                    if (e.dataType === 'source' && 'source' in e) {
-                        const sourceDataEvent = e as MapSourceDataEvent;
-                        expect(map.isSourceLoaded('geojson')).toBe(sourceDataEvent.isSourceLoaded);
-                        if (sourceDataEvent.sourceDataType === 'idle') {
-                            done();
-                        }
                     }
                 });
                 map.addSource('geojson', createStyleSource());
@@ -803,57 +703,42 @@ describe('Map', () => {
 
         });
 
-        test('listen to window resize event', () => {
-            const spy = jest.fn();
-            global.ResizeObserver = jest.fn().mockImplementation(() => ({
-                observe: spy
-            }));
+        test('listen to window resize event', done => {
+            const original = global.addEventListener;
+            global.addEventListener = function (type) {
+                if (type === 'resize') {
+                    //restore original function not to mess with other tests
+                    global.addEventListener = original;
+
+                    done();
+                }
+            };
 
             createMap();
-
-            expect(spy).toHaveBeenCalled();
         });
 
         test('do not resize if trackResize is false', () => {
-            let observerCallback: Function = null;
-            global.ResizeObserver = jest.fn().mockImplementation((c) => ({
-                observe: () => { observerCallback = c; }
-            }));
-
             const map = createMap({trackResize: false});
 
             const spyA = jest.spyOn(map, 'stop');
             const spyB = jest.spyOn(map, '_update');
             const spyC = jest.spyOn(map, 'resize');
 
-            observerCallback();
+            map._onWindowResize(undefined);
 
             expect(spyA).not.toHaveBeenCalled();
             expect(spyB).not.toHaveBeenCalled();
             expect(spyC).not.toHaveBeenCalled();
         });
 
-        test('do resize if trackResize is true (default)', async () => {
-            let observerCallback: Function = null;
-            global.ResizeObserver = jest.fn().mockImplementation((c) => ({
-                observe: () => { observerCallback = c; }
-            }));
-
+        test('do resize if trackResize is true (default)', () => {
             const map = createMap();
 
             const spyA = jest.spyOn(map, '_update');
             const spyB = jest.spyOn(map, 'resize');
 
-            // The initial "observe" event fired by ResizeObserver should be captured/muted
-            // in the map constructor
+            map._onWindowResize(undefined);
 
-            observerCallback();
-            expect(spyA).not.toHaveBeenCalled();
-            expect(spyB).not.toHaveBeenCalled();
-
-            // Following "observe" events should fire a resize / _update
-
-            observerCallback();
             expect(spyA).toHaveBeenCalled();
             expect(spyB).toHaveBeenCalled();
         });
@@ -1145,14 +1030,9 @@ describe('Map', () => {
 
     test('#remove', () => {
         const map = createMap();
-        const spyWorkerPoolRelease = jest.spyOn(map.style.dispatcher.workerPool, 'release');
         expect(map.getContainer().childNodes).toHaveLength(2);
         map.remove();
-        expect(spyWorkerPoolRelease).toHaveBeenCalledTimes(1);
         expect(map.getContainer().childNodes).toHaveLength(0);
-
-        // Cleanup
-        spyWorkerPoolRelease.mockClear();
     });
 
     test('#remove calls onRemove on added controls', () => {
@@ -2180,29 +2060,6 @@ describe('Map', () => {
         });
     });
 
-    test('no render before style loaded', done => {
-        server.respondWith('/styleUrl', JSON.stringify(createStyle()));
-        const map = createMap({style: '/styleUrl'});
-
-        jest.spyOn(map, 'triggerRepaint').mockImplementationOnce(() => {
-            if (!map.style._loaded) {
-                done('test failed');
-            }
-        });
-        map.on('render', () => {
-            if (map.style._loaded) {
-                done();
-            } else {
-                done('test failed');
-            }
-        });
-
-        // Force a update should not call triggerRepaint till style is loaded.
-        // Once style is loaded, it will trigger the update.
-        map._update();
-        server.respond();
-    });
-
     test('no idle event during move', async () => {
         const style = createStyle();
         const map = createMap({style, fadeDuration: 0});
@@ -2303,120 +2160,19 @@ describe('Map', () => {
 
         const id = 'missing-image';
 
-        const sampleImage = {width: 2, height: 1, data: new Uint8Array(8)};
-
-        let called: string;
+        let called;
         map.on('styleimagemissing', e => {
-            map.addImage(e.id, sampleImage);
+            map.addImage(e.id, {width: 1, height: 1, data: new Uint8Array(4)});
             called = e.id;
         });
 
         expect(map.hasImage(id)).toBeFalsy();
 
-        map.style.imageManager.getImages([id], (alwaysNull, generatedImage) => {
-            expect(generatedImage[id].data.width).toEqual(sampleImage.width);
-            expect(generatedImage[id].data.height).toEqual(sampleImage.height);
-            expect(generatedImage[id].data.data).toEqual(sampleImage.data);
+        map.style.imageManager.getImages([id], () => {
             expect(called).toBe(id);
             expect(map.hasImage(id)).toBeTruthy();
             done();
         });
-    });
-
-    test('map getImage matches addImage, uintArray', () => {
-        const map = createMap();
-        const id = 'add-get-uint';
-        const inputImage = {width: 2, height: 1, data: new Uint8Array(8)};
-
-        map.addImage(id, inputImage);
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(false);
-    });
-
-    test('map getImage matches addImage, uintClampedArray', () => {
-        const map = createMap();
-        const id = 'add-get-uint-clamped';
-        const inputImage = {width: 1, height: 2, data: new Uint8ClampedArray(8)};
-
-        map.addImage(id, inputImage);
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(false);
-    });
-
-    test('map getImage matches addImage, ImageData', () => {
-        const map = createMap();
-        const id = 'add-get-image-data';
-        const inputImage = new ImageData(1, 3);
-
-        map.addImage(id, inputImage);
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(false);
-    });
-
-    test('map getImage matches addImage, StyleImageInterface uint', () => {
-        const map = createMap();
-        const id = 'add-get-style-image-iface-uint';
-        const inputImage: StyleImageInterface = {
-            width: 3,
-            height: 1,
-            data: new Uint8Array(12)
-        };
-
-        map.addImage(id, inputImage);
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(false);
-    });
-
-    test('map getImage matches addImage, StyleImageInterface clamped', () => {
-        const map = createMap();
-        const id = 'add-get-style-image-iface-clamped';
-        const inputImage: StyleImageInterface = {
-            width: 4,
-            height: 1,
-            data: new Uint8ClampedArray(16)
-        };
-
-        map.addImage(id, inputImage);
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(false);
-    });
-
-    test('map getImage matches addImage, StyleImageInterface SDF', () => {
-        const map = createMap();
-        const id = 'add-get-style-image-iface-sdf';
-        const inputImage: StyleImageInterface = {
-            width: 5,
-            height: 1,
-            data: new Uint8Array(20)
-        };
-
-        map.addImage(id, inputImage, {sdf: true});
-        expect(map.hasImage(id)).toBeTruthy();
-
-        const gotImage = map.getImage(id);
-        expect(gotImage.data.width).toEqual(inputImage.width);
-        expect(gotImage.data.height).toEqual(inputImage.height);
-        expect(gotImage.sdf).toBe(true);
     });
 
     test('map does not fire `styleimagemissing` for empty icon values', done => {
@@ -2512,89 +2268,6 @@ describe('Map', () => {
         const sourcePromise = map.once('sourcedataabort');
         map.fire(new Event('dataabort'));
         await sourcePromise;
-    });
-
-    describe('#setTerrain', () => {
-        test('warn when terrain and hillshade source identical', done => {
-            server.respondWith('/source.json', JSON.stringify({
-                minzoom: 5,
-                maxzoom: 12,
-                attribution: 'Terrain',
-                tiles: ['http://example.com/{z}/{x}/{y}.pngraw'],
-                bounds: [-47, -7, -45, -5]
-            }));
-
-            const map = createMap();
-
-            map.on('load', () => {
-                map.addSource('terrainrgb', {type: 'raster-dem', url: '/source.json'});
-                server.respond();
-                map.addLayer({id: 'hillshade', type: 'hillshade', source: 'terrainrgb'});
-                const stub = jest.spyOn(console, 'warn').mockImplementation(() => { });
-                stub.mockReset();
-                map.setTerrain({
-                    source: 'terrainrgb'
-                });
-                expect(console.warn).toHaveBeenCalledTimes(1);
-                done();
-            });
-        });
-    });
-
-    describe('#setCooperativeGestures', () => {
-        test('returns self', () => {
-            const map = createMap();
-            expect(map.setCooperativeGestures(true)).toBe(map);
-        });
-
-        test('can be called more than once', () => {
-            const map = createMap();
-            map.setCooperativeGestures(true);
-            map.setCooperativeGestures(true);
-        });
-
-        test('calling set with no arguments turns cooperative gestures off', done => {
-            const map = createMap({cooperativeGestures: true});
-            map.on('load', () => {
-                map.setCooperativeGestures();
-                expect(map.getCooperativeGestures()).toBeFalsy();
-                done();
-            });
-        });
-    });
-
-    describe('#getCooperativeGestures', () => {
-        test('returns the cooperative gestures option', done => {
-            const map = createMap({cooperativeGestures: true});
-
-            map.on('load', () => {
-                expect(map.getCooperativeGestures()).toBe(true);
-                done();
-            });
-        });
-
-        test('returns falsy if cooperative gestures option is not specified', done => {
-            const map = createMap();
-
-            map.on('load', () => {
-                expect(map.getCooperativeGestures()).toBeFalsy();
-                done();
-            });
-        });
-
-        test('returns the cooperative gestures option with custom messages', done => {
-            const option = {
-                'windowsHelpText': 'Custom message',
-                'macHelpText': 'Custom message',
-                'mobileHelpText': 'Custom message',
-            };
-            const map = createMap({cooperativeGestures: option});
-
-            map.on('load', () => {
-                expect(map.getCooperativeGestures()).toEqual(option);
-                done();
-            });
-        });
     });
 
     describe('getCameraTargetElevation', () => {

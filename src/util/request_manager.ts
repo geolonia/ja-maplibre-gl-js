@@ -1,20 +1,9 @@
+import {IResourceType} from './ajax';
+
 import type {RequestParameters} from './ajax';
 
-/**
- * A type of MapLibre resource.
- */
-export const enum ResourceType {
-    Glyphs = 'Glyphs',
-    Image = 'Image',
-    Source = 'Source',
-    SpriteImage = 'SpriteImage',
-    SpriteJSON = 'SpriteJSON',
-    Style = 'Style',
-    Tile = 'Tile',
-    Unknown = 'Unknown',
-}
-
-export type RequestTransformFunction = (url: string, resourceType?: ResourceType) => RequestParameters | undefined;
+type ResourceTypeEnum = keyof IResourceType;
+export type RequestTransformFunction = (url: string, resourceType?: ResourceTypeEnum) => RequestParameters;
 
 type UrlObject = {
     protocol: string;
@@ -30,7 +19,7 @@ export class RequestManager {
         this._transformRequestFn = transformRequestFn;
     }
 
-    transformRequest(url: string, type: ResourceType) {
+    transformRequest(url: string, type: ResourceTypeEnum) {
         if (this._transformRequestFn) {
             return this._transformRequestFn(url, type) || {url};
         }

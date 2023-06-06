@@ -1,13 +1,10 @@
-import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, ProgramValue, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArray, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha} from './value';
+import {ClearColor, ClearDepth, ClearStencil, ColorMask, DepthMask, StencilMask, StencilFunc, StencilOp, StencilTest, DepthRange, DepthTest, DepthFunc, Blend, BlendFunc, BlendColor, ProgramValue, ActiveTextureUnit, Viewport, BindFramebuffer, BindRenderbuffer, BindTexture, BindVertexBuffer, BindElementBuffer, BindVertexArrayOES, PixelStoreUnpack, PixelStoreUnpackPremultiplyAlpha} from './value';
 import Context from './context';
-import {Color} from '@maplibre/maplibre-gl-style-spec';
+import Color from '../style-spec/util/color';
 import {deepEqual} from '../util/util';
 import gl from 'gl';
-import {setupMockWebGLContext} from '../util/test/mock_webgl';
 
 const context = new Context(gl(10, 10) as any);
-
-setupMockWebGLContext(context.gl);
 
 const valueTest = (Constructor: new (...args:any[]) => any, options) => {
     test('#constructor', () => {
@@ -174,10 +171,10 @@ describe('BindElementBuffer', () => {
     });
 });
 
-describe('BindVertexArray', () => {
-    valueTest(BindVertexArray, {
+describe('BindVertexArrayOES', () => {
+    valueTest(BindVertexArrayOES, {
         equality: (a, b) => a === b,
-        setValue: context.createVertexArray()
+        setValue: context.extVertexArrayObject
     });
 });
 

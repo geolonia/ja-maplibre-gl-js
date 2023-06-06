@@ -1,4 +1,4 @@
-import type {OverlapMode} from '../style/style_layer/overlap_mode';
+import type {OverlapMode} from '../style/style_layer/symbol_style_layer';
 
 type QueryArgs = {
     hitTest: boolean;

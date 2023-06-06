@@ -5,7 +5,7 @@ import HandlerInertia from './handler_inertia';
 import {MapEventHandler, BlockableMapEventHandler} from './handler/map_event';
 import BoxZoomHandler from './handler/box_zoom';
 import TapZoomHandler from './handler/tap_zoom';
-import {generateMouseRotationHandler, generateMousePitchHandler, generateMousePanHandler} from './handler/mouse';
+import {MousePanHandler, MouseRotateHandler, MousePitchHandler} from './handler/mouse';
 import TouchPanHandler from './handler/touch_pan';
 import {TwoFingersTouchZoomHandler, TwoFingersTouchRotateHandler, TwoFingersTouchPitchHandler} from './handler/two_fingers_touch';
 import KeyboardHandler from './handler/keyboard';
@@ -18,6 +18,7 @@ import DragRotateHandler from './handler/shim/drag_rotate';
 import TouchZoomRotateHandler from './handler/shim/two_fingers_touch';
 import {bindAll, extend} from '../util/util';
 import Point from '@mapbox/point-geometry';
+import LngLat from '../geo/lng_lat';
 
 export type InputEvent = MouseEvent | TouchEvent | KeyboardEvent | WheelEvent;
 
@@ -45,15 +46,12 @@ export interface Handler {
     // They are called with dom events whenever those dom evens are received.
     readonly touchstart?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     readonly touchmove?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
-    readonly touchmoveWindow?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     readonly touchend?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     readonly touchcancel?: (e: TouchEvent, points: Array<Point>, mapTouches: Array<Touch>) => HandlerResult | void;
     readonly mousedown?: (e: MouseEvent, point: Point) => HandlerResult | void;
     readonly mousemove?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    readonly mousemoveWindow?: (e: MouseEvent, point: Point) => HandlerResult | void;
     readonly mouseup?: (e: MouseEvent, point: Point) => HandlerResult | void;
     readonly dblclick?: (e: MouseEvent, point: Point) => HandlerResult | void;
-    readonly contextmenu?: (e: MouseEvent) => HandlerResult | void;
     readonly wheel?: (e: WheelEvent, point: Point) => HandlerResult | void;
     readonly keydown?: (e: KeyboardEvent) => HandlerResult | void;
     readonly keyup?: (e: KeyboardEvent) => HandlerResult | void;
@@ -76,24 +74,12 @@ export type HandlerResult = {
     cameraAnimation?: (map: Map) => any;
     // The last three properties are needed by only one handler: scrollzoom.
     // The DOM event to be used as the `originalEvent` on any camera change events.
-    originalEvent?: Event;
+    originalEvent?: any;
     // Makes the manager trigger a frame, allowing the handler to return multiple results over time (see scrollzoom).
     needsRenderFrame?: boolean;
     // The camera changes won't get recorded for inertial zooming.
     noInertia?: boolean;
 };
-
-export type EventInProgress = {
-    handlerName: string;
-    originalEvent: Event;
-}
-
-export type EventsInProgress = {
-    zoom?: EventInProgress;
-    pitch?: EventInProgress;
-    rotate?: EventInProgress;
-    drag?: EventInProgress;
-}
 
 function hasChange(result: HandlerResult) {
     return (result.panDelta && result.panDelta.mag()) || result.zoomDelta || result.bearingDelta || result.pitchDelta;
@@ -105,17 +91,16 @@ class HandlerManager {
     _handlers: Array<{
         handlerName: string;
         handler: Handler;
-        allowed: Array<string>;
+        allowed: any;
     }>;
-    _eventsInProgress: EventsInProgress;
+    _eventsInProgress: any;
     _frameId: number;
     _inertia: HandlerInertia;
     _bearingSnap: number;
     _handlersById: {[x: string]: Handler};
     _updatingCamera: boolean;
-    _changes: Array<[HandlerResult, EventsInProgress, {[handlerName: string]: Event}]>;
-    _terrainMovement: boolean;
-    _zoom: {handlerName: string};
+    _changes: Array<[HandlerResult, any, any]>;
+    _drag: {center: Point; lngLat: LngLat; point: Point; handlerName: string};
     _previousActiveHandlers: {[x: string]: Handler};
     _listeners: Array<[Window | Document | HTMLElement, string, {
         passive?: boolean;
@@ -200,8 +185,8 @@ class HandlerManager {
         const boxZoom = map.boxZoom = new BoxZoomHandler(map, options);
         this._add('boxZoom', boxZoom);
 
-        const tapZoom = new TapZoomHandler(map);
-        const clickZoom = new ClickZoomHandler(map);
+        const tapZoom = new TapZoomHandler();
+        const clickZoom = new ClickZoomHandler();
         map.doubleClickZoom = new DoubleClickZoomHandler(clickZoom, tapZoom);
         this._add('tapZoom', tapZoom);
         this._add('clickZoom', clickZoom);
@@ -212,13 +197,13 @@ class HandlerManager {
         const touchPitch = map.touchPitch = new TwoFingersTouchPitchHandler(map);
         this._add('touchPitch', touchPitch);
 
-        const mouseRotate = generateMouseRotationHandler(options);
-        const mousePitch = generateMousePitchHandler(options);
+        const mouseRotate = new MouseRotateHandler(options);
+        const mousePitch = new MousePitchHandler(options);
         map.dragRotate = new DragRotateHandler(options, mouseRotate, mousePitch);
         this._add('mouseRotate', mouseRotate, ['mousePitch']);
         this._add('mousePitch', mousePitch, ['mouseRotate']);
 
-        const mousePan = generateMousePanHandler(options);
+        const mousePan = new MousePanHandler(options);
         const touchPan = new TouchPanHandler(options, map);
         map.dragPan = new DragPanHandler(el, mousePan, touchPan);
         this._add('mousePan', mousePan);
@@ -233,7 +218,7 @@ class HandlerManager {
         const scrollZoom = map.scrollZoom = new ScrollZoomHandler(map, this);
         this._add('scrollZoom', scrollZoom, ['mousePan']);
 
-        const keyboard = map.keyboard = new KeyboardHandler(map);
+        const keyboard = map.keyboard = new KeyboardHandler();
         this._add('keyboard', keyboard);
 
         this._add('blockableMapEvent', new BlockableMapEventHandler(map));
@@ -305,7 +290,7 @@ class HandlerManager {
         return mapTouches as any as TouchList;
     }
 
-    handleEvent(e: Event, eventName?: string) {
+    handleEvent(e: InputEvent | RenderFrameEvent, eventName?: string) {
 
         if (e.type === 'blur') {
             this.stop(true);
@@ -314,7 +299,7 @@ class HandlerManager {
 
         this._updatingCamera = true;
 
-        const inputEvent = e.type === 'renderFrame' ? undefined : e as InputEvent;
+        const inputEvent = e.type === 'renderFrame' ? undefined : (e as any as InputEvent);
 
         /*
          * We don't call e.preventDefault() for any events by default.
@@ -322,12 +307,12 @@ class HandlerManager {
          */
 
         const mergedHandlerResult: HandlerResult = {needsRenderFrame: false};
-        const eventsInProgress: EventsInProgress = {};
+        const eventsInProgress = {};
         const activeHandlers = {};
-        const eventTouches = (e as TouchEvent).touches;
+        const eventTouches = (e as any as TouchEvent).touches;
 
         const mapTouches = eventTouches ? this._getMapTouches(eventTouches) : undefined;
-        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) : DOM.mousePos(this._el, ((e as MouseEvent)));
+        const points = mapTouches ? DOM.touchPos(this._el, mapTouches) : DOM.mousePos(this._el, ((e as any as MouseEvent)));
 
         for (const {handlerName, handler, allowed} of this._handlers) {
             if (!handler.isEnabled()) continue;
@@ -351,7 +336,7 @@ class HandlerManager {
             }
         }
 
-        const deactivatedHandlers: {[handlerName: string]: Event} = {};
+        const deactivatedHandlers = {};
         for (const name in this._previousActiveHandlers) {
             if (!activeHandlers[name]) {
                 deactivatedHandlers[name] = inputEvent;
@@ -379,11 +364,7 @@ class HandlerManager {
         }
     }
 
-    mergeHandlerResult(mergedHandlerResult: HandlerResult,
-        eventsInProgress: EventsInProgress,
-        handlerResult: HandlerResult,
-        name: string,
-        e?: InputEvent) {
+    mergeHandlerResult(mergedHandlerResult: HandlerResult, eventsInProgress: any, handlerResult: HandlerResult, name: string, e?: InputEvent) {
         if (!handlerResult) return;
 
         extend(mergedHandlerResult, handlerResult);
@@ -407,8 +388,8 @@ class HandlerManager {
     }
 
     _applyChanges() {
-        const combined: HandlerResult = {};
-        const combinedEventsInProgress: EventsInProgress = {};
+        const combined: {[k: string]: any} = {};
+        const combinedEventsInProgress = {};
         const combinedDeactivatedHandlers = {};
 
         for (const [change, eventsInProgress, deactivatedHandlers] of this._changes) {
@@ -429,14 +410,12 @@ class HandlerManager {
         this._changes = [];
     }
 
-    _updateMapTransform(combinedResult: HandlerResult,
-        combinedEventsInProgress: EventsInProgress,
-        deactivatedHandlers: {[handlerName: string]: Event}) {
+    _updateMapTransform(combinedResult: any, combinedEventsInProgress: any, deactivatedHandlers: any) {
         const map = this._map;
-        const tr = map._getTransformForUpdate();
+        const tr = map.transform;
         const terrain = map.terrain;
 
-        if (!hasChange(combinedResult) && !(terrain && this._terrainMovement)) {
+        if (!hasChange(combinedResult) && !(terrain && this._drag)) {
             return this._fireEvents(combinedEventsInProgress, deactivatedHandlers, true);
         }
 
@@ -458,31 +437,32 @@ class HandlerManager {
         if (!terrain) {
             tr.setLocationAtPoint(loc, around);
         } else {
-            // when 3d-terrain is enabled act a little different:
-            //    - dragging do not drag the picked point itself, instead it drags the map by pixel-delta.
+            // when 3d-terrain is enabled act a litte different:
+            //    - draging do not drag the picked point itself, instead it drags the map by pixel-delta.
             //      With this approach it is no longer possible to pick a point from somewhere near
             //      the horizon to the center in one move.
             //      So this logic avoids the problem, that in such cases you easily loose orientation.
-            if (!this._terrainMovement &&
-                (combinedEventsInProgress.drag || combinedEventsInProgress.zoom)) {
-                // When starting to drag or move, flag it and register moveend to clear flagging
-                this._terrainMovement = true;
+            //    - scrollzoom does not zoom into the mouse-point, instead it zooms into map-center
+            //      this should be fixed in future-version
+            // when dragging starts, remember mousedown-location and panDelta from this point
+            if (combinedEventsInProgress.drag && !this._drag) {
+                this._drag = {
+                    center: tr.centerPoint,
+                    lngLat: tr.pointLocation(around),
+                    point: around,
+                    handlerName: combinedEventsInProgress.drag.handlerName
+                };
                 tr.freezeElevation = true;
-                tr.setLocationAtPoint(loc, around);
-                this._map.once('moveend', () => {
-                    tr.freezeElevation = false;
-                    this._terrainMovement = false;
-                    tr.recalculateZoom(map.terrain);
-                });
-            } else if (combinedEventsInProgress.drag && this._terrainMovement) {
-                // drag map
+            // when dragging ends, recalcuate the zoomlevel for the new center coordinate
+            } else if (this._drag && deactivatedHandlers[this._drag.handlerName]) {
+                tr.freezeElevation = false;
+                tr.recalculateZoom(map.terrain);
+                this._drag = null;
+            // drag map
+            } else if (combinedEventsInProgress.drag && this._drag) {
                 tr.center = tr.pointLocation(tr.centerPoint.sub(panDelta));
-            } else {
-                tr.setLocationAtPoint(loc, around);
             }
         }
-
-        map._applyUpdatedTransform(tr);
 
         this._map._update();
         if (!combinedResult.noInertia) this._inertia.record(combinedResult);
@@ -490,7 +470,7 @@ class HandlerManager {
 
     }
 
-    _fireEvents(newEventsInProgress: EventsInProgress, deactivatedHandlers: {[handlerName: string]: Event}, allowEndAnimation: boolean) {
+    _fireEvents(newEventsInProgress: {[x: string]: any}, deactivatedHandlers: any, allowEndAnimation: boolean) {
 
         const wasMoving = isMoving(this._eventsInProgress);
         const nowMoving = isMoving(newEventsInProgress);
@@ -563,7 +543,7 @@ class HandlerManager {
 
     }
 
-    _fireEvent(type: string, e?: Event) {
+    _fireEvent(type: string, e: any) {
         this._map.fire(new Event(type, e ? {originalEvent: e} : {}));
     }
 

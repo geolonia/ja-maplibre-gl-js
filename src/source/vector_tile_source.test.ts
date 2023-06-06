@@ -5,7 +5,7 @@ import Tile from './tile';
 import {OverscaledTileID} from './tile_id';
 import {Evented} from '../util/evented';
 import {RequestManager} from '../util/request_manager';
-import fixturesSource from '../../test/unit/assets/source.json' assert {type: 'json'};
+import fixturesSource from '../../test/unit/assets/source.json';
 import {getMockDispatcher, getWrapDispatcher} from '../util/test/util';
 import Map from '../ui/map';
 
@@ -217,7 +217,7 @@ describe('VectorTileSource', () => {
                 expect(tile.state).toBe('loading');
                 source.loadTile(tile, () => {
                     expect(events).toEqual(
-                        ['loadTile', 'tileLoaded', 'reloadTile', 'tileLoaded']
+                        ['loadTile', 'tileLoaded', 'enforceCacheSizeLimit', 'reloadTile', 'tileLoaded']
                     );
                     done();
                 });

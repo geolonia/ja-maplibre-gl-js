@@ -1,5 +1,5 @@
 import Hash from './hash';
-import {createMap as globalCreateMap, beforeMapTest} from '../util/test/util';
+import {setPerformance, createMap as globalCreateMap, setWebGlContext} from '../util/test/util';
 
 describe('hash', () => {
     function createHash(name: string = undefined) {
@@ -18,7 +18,8 @@ describe('hash', () => {
     let map;
 
     beforeEach(() => {
-        beforeMapTest();
+        setWebGlContext();
+        setPerformance();
         map = createMap();
     });
 

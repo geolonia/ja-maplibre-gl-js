@@ -18,10 +18,10 @@ class Tent3D implements CustomLayerInterface {
         this.id = 'tent-3d';
     }
 
-    onAdd(map: Map, gl: WebGL2RenderingContext) {
-        const vertexSource = `#version 300 es
+    onAdd(map, gl: WebGLRenderingContext) {
+        const vertexSource = `
 
-        in vec3 aPos;
+        attribute vec3 aPos;
         uniform mat4 uMatrix;
 
         void main() {
@@ -29,12 +29,11 @@ class Tent3D implements CustomLayerInterface {
         }
         `;
 
-        const fragmentSource = `#version 300 es
-
-        out highp vec4 fragColor;
+        const fragmentSource = `
         void main() {
-            fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-        }`;
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }
+        `;
 
         const vertexShader = gl.createShader(gl.VERTEX_SHADER);
         gl.shaderSource(vertexShader, vertexSource);
@@ -89,7 +88,7 @@ class Tent3D implements CustomLayerInterface {
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexArray, gl.STATIC_DRAW);
     }
 
-    render(gl: WebGL2RenderingContext, matrix) {
+    render(gl: WebGLRenderingContext, matrix) {
         gl.useProgram(this.program);
         gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);

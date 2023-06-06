@@ -1,4 +1,4 @@
-import {createMap as globalCreateMap, beforeMapTest} from '../../util/test/util';
+import {createMap as globalCreateMap, setWebGlContext, setPerformance} from '../../util/test/util';
 
 function createMap(logoPosition, maplibreLogo) {
 
@@ -16,7 +16,8 @@ function createMap(logoPosition, maplibreLogo) {
 }
 
 beforeEach(() => {
-    beforeMapTest();
+    setWebGlContext();
+    setPerformance();
 });
 
 describe('LogoControl', () => {

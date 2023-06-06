@@ -1,7 +1,6 @@
 import webWorkerFactory from './web_worker';
 import type {WorkerInterface} from './web_worker';
 import browser from './browser';
-import {isSafari} from './util';
 
 export const PRELOAD_POOL_ID = 'mapboxgl_preloaded_worker_pool';
 
@@ -54,6 +53,5 @@ export default class WorkerPool {
     }
 }
 
-// Based on results from A/B testing: https://github.com/maplibre/maplibre-gl-js/pull/2354
 const availableLogicalProcessors = Math.floor(browser.hardwareConcurrency / 2);
-WorkerPool.workerCount = isSafari(globalThis) ? Math.max(Math.min(availableLogicalProcessors, 3), 1) : 1;
+WorkerPool.workerCount = Math.max(Math.min(availableLogicalProcessors, 6), 1);

@@ -2,9 +2,8 @@ import DOM from '../../util/dom';
 
 import {ease as _ease, bindAll, bezier} from '../../util/util';
 import browser from '../../util/browser';
-import {interpolates} from '@maplibre/maplibre-gl-style-spec';
+import {number as interpolate} from '../../style-spec/util/interpolate';
 import LngLat from '../../geo/lng_lat';
-import TransformProvider from './transform-provider';
 
 import type Map from '../map';
 import type HandlerManager from '../handler_manager';
@@ -23,21 +22,10 @@ const wheelZoomRate = 1 / 450;
 const maxScalePerFrame = 2;
 
 /**
- * The scroll zoom handler options object
- */
-export type ScrollZoomHandlerOptions = {
-    /**
-     * If "center" is passed, map will zoom around the center of map
-     */
-    around?: 'center';
-};
-
-/**
  * The `ScrollZoomHandler` allows the user to zoom the map by scrolling.
  */
 class ScrollZoomHandler {
     _map: Map;
-    _tr: TransformProvider;
     _el: HTMLElement;
     _enabled: boolean;
     _active: boolean;
@@ -74,7 +62,6 @@ class ScrollZoomHandler {
      */
     constructor(map: Map, handler: HandlerManager) {
         this._map = map;
-        this._tr = new TransformProvider(map);
         this._el = map.getCanvasContainer();
         this._handler = handler;
 
@@ -133,15 +120,15 @@ class ScrollZoomHandler {
     /**
      * Enables the "scroll to zoom" interaction.
      *
-     * @param {ScrollZoomHandlerOptions} [options] Options object.
-     * @param {string} [options.around] If "center" is passed, map will zoom around the center of map
+     * @param {Object} [options] Options object.
+     * @param {string} [options.around] If "center" is passed, map will zoom around center of map
      *
      * @example
      *   map.scrollZoom.enable();
      * @example
      *  map.scrollZoom.enable({ around: 'center' })
      */
-    enable(options?: ScrollZoomHandlerOptions) {
+    enable(options?: any) {
         if (this.isEnabled()) return;
         this._enabled = true;
         this._aroundCenter = options && options.around === 'center';
@@ -161,7 +148,7 @@ class ScrollZoomHandler {
     wheel(e: WheelEvent) {
         if (!this.isEnabled()) return;
         if (this._map._cooperativeGestures) {
-            if (e[this._map._metaKey]) {
+            if (this._map._metaPress) {
                 e.preventDefault();
             } else {
                 return;
@@ -218,7 +205,7 @@ class ScrollZoomHandler {
         e.preventDefault();
     }
 
-    _onTimeout(initialEvent: MouseEvent) {
+    _onTimeout(initialEvent: any) {
         this._type = 'wheel';
         this._delta -= this._lastValue;
         if (!this._active) {
@@ -226,7 +213,7 @@ class ScrollZoomHandler {
         }
     }
 
-    _start(e: MouseEvent) {
+    _start(e: any) {
         if (!this._delta) return;
 
         if (this._frameId) {
@@ -244,10 +231,9 @@ class ScrollZoomHandler {
         }
 
         const pos = DOM.mousePos(this._el, e);
-        const tr = this._tr;
 
-        this._around = LngLat.convert(this._aroundCenter ? tr.center : tr.unproject(pos));
-        this._aroundPoint = tr.transform.locationPoint(this._around);
+        this._around = LngLat.convert(this._aroundCenter ? this._map.getCenter() : this._map.unproject(pos));
+        this._aroundPoint = this._map.transform.locationPoint(this._around);
         if (!this._frameId) {
             this._frameId = true;
             this._handler._triggerRenderFrame();
@@ -259,7 +245,7 @@ class ScrollZoomHandler {
         this._frameId = null;
 
         if (!this.isActive()) return;
-        const tr = this._tr.transform;
+        const tr = this._map.transform;
 
         // if we've had scroll events since the last render frame, consume the
         // accumulated delta, and update the target zoom level accordingly
@@ -298,7 +284,7 @@ class ScrollZoomHandler {
 
             const t = Math.min((browser.now() - this._lastWheelEventTime) / 200, 1);
             const k = easing(t);
-            zoom = interpolates.number(startZoom, targetZoom, k);
+            zoom = interpolate(startZoom, targetZoom, k);
             if (t < 1) {
                 if (!this._frameId) {
                     this._frameId = true;
