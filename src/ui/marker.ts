@@ -259,14 +259,23 @@ export default class Marker extends Evented {
         this._popup = null;
     }
 
+    // /**
+    //  * Attaches the `Marker` to a `Map` object.
+    //  * @param {Map} map The MapLibre GL JS map to add the marker to.
+    //  * @returns {Marker} `this`
+    //  * @example
+    //  * var marker = new maplibregl.Marker()
+    //  *   .setLngLat([30.5, 50.5])
+    //  *   .addTo(map); // add the marker to the map
+    //  */
     /**
-     * Attaches the `Marker` to a `Map` object.
-     * @param {Map} map The MapLibre GL JS map to add the marker to.
+     * `Marker`を `Map` オブジェクトに追加します。
+     * @param {Map} map map Marker を追加する MapLibre GL JS の地図オブジェクトです。
      * @returns {Marker} `this`
      * @example
      * var marker = new maplibregl.Marker()
      *   .setLngLat([30.5, 50.5])
-     *   .addTo(map); // add the marker to the map
+     *   .addTo(map); // マーカーを地図に追加します
      */
     addTo(map: Map) {
         this.remove();
@@ -314,12 +323,25 @@ export default class Marker extends Evented {
         return this;
     }
 
+    // /**
+    //  * Get the marker's geographical location.
+    //  *
+    //  * The longitude of the result may differ by a multiple of 360 degrees from the longitude previously
+    //  * set by `setLngLat` because `Marker` wraps the anchor longitude across copies of the world to keep
+    //  * the marker on screen.
+    //  *
+    //  * @returns {LngLat} A {@link LngLat} describing the marker's location.
+    //  * @example
+    //  * // Store the marker's longitude and latitude coordinates in a variable
+    //  * var lngLat = marker.getLngLat();
+    //  * // Print the marker's longitude and latitude values in the console
+    //  * console.log('Longitude: ' + lngLat.lng + ', Latitude: ' + lngLat.lat )
+    //  * @see [Create a draggable Marker](https://maplibre.org/maplibre-gl-js-docs/example/drag-a-marker/)
+    //  */
     /**
-     * Get the marker's geographical location.
+     * マーカーの地理的位置を取得します。
      *
-     * The longitude of the result may differ by a multiple of 360 degrees from the longitude previously
-     * set by `setLngLat` because `Marker` wraps the anchor longitude across copies of the world to keep
-     * the marker on screen.
+     * 結果の経度は、setLngLatで以前に設定された経度と360度の倍数で異なる場合があります。これは、Markerがアンカーの経度を世界のコピーをまたいでラップし、マーカーを画面上に維持するためです。
      *
      * @returns {LngLat} A {@link LngLat} describing the marker's location.
      * @example
@@ -353,8 +375,12 @@ export default class Marker extends Evented {
         return this;
     }
 
-    /**
-     * Returns the `Marker`'s HTML element.
+    // /**
+    //  * Returns the `Marker`'s HTML element.
+    //  * @returns {HTMLElement} element
+    //  */
+     /**
+     * `Marker`のHTML要素を返します。
      * @returns {HTMLElement} element
      */
     getElement() {
