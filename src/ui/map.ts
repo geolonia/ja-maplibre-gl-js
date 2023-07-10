@@ -2503,11 +2503,17 @@ class Map extends Camera {
         return this._update(true);
     }
 
+    // /**
+    //  * Returns the filter applied to the specified style layer.
+    //  *
+    //  * @param {string} layerId The ID of the style layer whose filter to get.
+    //  * @returns {Array} The layer's filter.
+    //  */
     /**
-     * Returns the filter applied to the specified style layer.
+     * 指定したスタイルレイヤーに適用されたフィルタを返します。
      *
-     * @param {string} layerId The ID of the style layer whose filter to get.
-     * @returns {Array} The layer's filter.
+     * @param {string} layerId フィルタを取得するスタイルレイヤーのID
+     * @returns {Array} レイヤーのフィルター
      */
     getFilter(layerId: string) {
         return this.style.getFilter(layerId);
