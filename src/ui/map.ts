@@ -2503,11 +2503,17 @@ class Map extends Camera {
         return this._update(true);
     }
 
+    // /**
+    //  * Returns the filter applied to the specified style layer.
+    //  *
+    //  * @param {string} layerId The ID of the style layer whose filter to get.
+    //  * @returns {Array} The layer's filter.
+    //  */
     /**
-     * Returns the filter applied to the specified style layer.
+     * 指定されたスタイル レイヤーに適用されたフィルタを返します。
      *
-     * @param {string} layerId The ID of the style layer whose filter to get.
-     * @returns {Array} The layer's filter.
+     * @param {string} layerId フィルタを取得するスタイルレイヤーのID
+     * @returns {Array} レイヤーのフィルター
      */
     getFilter(layerId: string) {
         return this.style.getFilter(layerId);
@@ -2732,7 +2738,7 @@ class Map extends Camera {
      * {@link Map#queryRenderedFeatures} やイベントハンドラから返されるFeatureオブジェクトは、Feature識別子として使用することができます。
      * @param {string | number} feature.id フィーチャーの一意のID。
      * @param {string} feature.source フィーチャーのベクトルまたはGeoJSONソースのID。
-     * @param {string} [feature.sourceLayer] (オプション) *ベクタータイルソースの場合、`sourceLayer`が必要です。*
+     * @param {string} [feature.sourceLayer] (オプション) *ベクタータイルソースの場合、`sourceLayer`が必要です。
      *
      * @returns {Object} フィーチャーのステート: 実行時にフィーチャーに割り当てられたキーとバリューのペアのセットです。
      *
