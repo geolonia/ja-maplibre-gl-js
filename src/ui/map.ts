@@ -2426,12 +2426,25 @@ class Map extends Camera {
         return this._update(true);
     }
 
+    // /**
+    //  * Returns the layer with the specified ID in the map's style.
+    //  *
+    //  * @param {string} id The ID of the layer to get.
+    //  * @returns {StyleLayer} The layer with the specified ID, or `undefined`
+    //  *   if the ID corresponds to no existing layers.
+    //  *
+    //  * @example
+    //  * var stateDataLayer = map.getLayer('state-data');
+    //  *
+    //  * @see [Filter symbols by toggling a list](https://maplibre.org/maplibre-gl-js-docs/example/filter-markers/)
+    //  * @see [Filter symbols by text input](https://maplibre.org/maplibre-gl-js-docs/example/filter-markers-by-input/)
+    //  */
     /**
-     * Returns the layer with the specified ID in the map's style.
+     * マップのスタイルで指定された ID を持つレイヤーを返します。
      *
-     * @param {string} id The ID of the layer to get.
-     * @returns {StyleLayer} The layer with the specified ID, or `undefined`
-     *   if the ID corresponds to no existing layers.
+     * @param {string} id 取得するレイヤーのID
+     * @returns {StyleLayer} 指定された ID を持つレイヤー、または ID が既存のレイヤーに該当しない場合は `undefined` を返します。
+     * 
      *
      * @example
      * var stateDataLayer = map.getLayer('state-data');
