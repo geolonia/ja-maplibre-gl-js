@@ -539,9 +539,13 @@ export default class Marker extends Evented {
         }, 100);
     }
 
+    // /**
+    //  * Get the marker's offset.
+    //  * @returns {Point} The marker's screen coordinates in pixels.
+    //  */
     /**
-     * Get the marker's offset.
-     * @returns {Point} The marker's screen coordinates in pixels.
+     * マーカーのオフセットを取得します。
+     * @returns {Point} マーカーのスクリーン座標（ピクセル単位）
      */
     getOffset() {
         return this._offset;
