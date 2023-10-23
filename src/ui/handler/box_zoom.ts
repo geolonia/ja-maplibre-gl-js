@@ -5,9 +5,13 @@ import {Event} from '../../util/evented';
 import type Map from '../map';
 import type Point from '@mapbox/point-geometry';
 
+// /**
+//  * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
+//  * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
+//  */
 /**
- * The `BoxZoomHandler` allows the user to zoom the map to fit within a bounding box.
- * The bounding box is defined by clicking and holding `shift` while dragging the cursor.
+ * `BoxZoomHandler`は、ユーザーがマップをバウンディングボックス内に収まるようにズームできるようにする。
+ * バウンディングボックスはカーソルをドラッグしている間、`shift`を押しながらクリックすることで定義できる。
  */
 class BoxZoomHandler {
     _map: Map;
