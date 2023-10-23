@@ -2580,12 +2580,19 @@ class Map extends Camera {
         return this._update(true);
     }
 
+    // /**
+    //  * Returns the value of a layout property in the specified style layer.
+    //  *
+    //  * @param {string} layerId The ID of the layer to get the layout property from.
+    //  * @param {string} name The name of the layout property to get.
+    //  * @returns {*} The value of the specified layout property.
+    //  */
     /**
-     * Returns the value of a layout property in the specified style layer.
+     * 指定したスタイルレイヤーのレイアウトプロパティの値を返します。
      *
-     * @param {string} layerId The ID of the layer to get the layout property from.
-     * @param {string} name The name of the layout property to get.
-     * @returns {*} The value of the specified layout property.
+     * @param {string} layerId レイアウト・プロパティを取得するレイヤーの ID。
+     * @param {string} name 取得するレイアウト・プロパティの名前。
+     * @returns {*} 指定されたレイアウトプロパティの値。
      */
     getLayoutProperty(layerId: string, name: string) {
         return this.style.getLayoutProperty(layerId, name);
