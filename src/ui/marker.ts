@@ -539,17 +539,25 @@ export default class Marker extends Evented {
         }, 100);
     }
 
+    // /**
+    //  * Get the marker's offset.
+    //  * @returns {Point} The marker's screen coordinates in pixels.
+    //  */
     /**
-     * Get the marker's offset.
-     * @returns {Point} The marker's screen coordinates in pixels.
+     * マーカーのオフセットを取得します。
+     * @returns {Point} マーカーのスクリーン座標（ピクセル単位）
      */
     getOffset() {
         return this._offset;
     }
-
+    // /**
+    //  * Sets the offset of the marker
+    //  * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+    //  * @returns {Marker} `this`
+    //  */
     /**
-     * Sets the offset of the marker
-     * @param {PointLike} offset The offset in pixels as a {@link PointLike} object to apply relative to the element's center. Negatives indicate left and up.
+     * マーカーのオフセットを設定する
+     * @param {PointLike} offset 要素の中心から相対的に適用するオフセットを {@link PointLike} オブジェクトとしてピクセル単位で指定します。マイナスは左と上を示します.
      * @returns {Marker} `this`
      */
     setOffset(offset: PointLike) {
