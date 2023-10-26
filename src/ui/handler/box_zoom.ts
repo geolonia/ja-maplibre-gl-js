@@ -63,9 +63,14 @@ class BoxZoomHandler {
         if (this.isEnabled()) return;
         this._enabled = true;
     }
-
+　　　　　　// /**
+     // * Disables the "box zoom" interaction.
+     // *
+     // * @example
+     // *   map.boxZoom.disable();
+     // */
     /**
-     * Disables the "box zoom" interaction.
+     * ボックスズーム」を無効にする。
      *
      * @example
      *   map.boxZoom.disable();
